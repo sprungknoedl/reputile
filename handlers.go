@@ -6,6 +6,11 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"golang.org/x/net/context"
+
+	"github.com/Sirupsen/logrus"
+	gorilla "github.com/gorilla/context"
 )
 
 func HandleError(w http.ResponseWriter, r *http.Request, err error) {
@@ -41,26 +46,33 @@ func GetDatabase(w http.ResponseWriter, r *http.Request) {
 	writer.Flush()
 }
 
-func GetCron(w http.ResponseWriter, r *http.Request) {
-	count := 0
-	start := time.Now()
+func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
+	// create new background context & copy db handle
+	db := gorilla.Get(r, databaseKey).(*Datastore)
+	ctx := context.WithValue(context.Background(), databaseKey, db)
 
-	ctx := NewContext(r)
-	ch := Combine(Lists...)(ctx)
+	go func() {
+		count := 0
+		start := time.Now()
+		ch := Combine(Lists...)(ctx)
 
-	for entry := range ch {
-		if entry.Err != nil {
-			HandleError(w, r, entry.Err)
-			return
+		for entry := range ch {
+			if entry.Err != nil {
+				logrus.Errorf("failed to fetch entry: %v", entry.Err)
+				return
+			}
+
+			count++
+			err := Store(ctx, entry)
+			if err != nil {
+				logrus.Errorf("failed to store entry: %v", err)
+				return
+			}
+
 		}
 
-		count++
-		err := Store(ctx, entry)
-		if err != nil {
-			HandleError(w, r, err)
-			return
-		}
-	}
+		logrus.Printf("added %d entries in %v", count, time.Since(start))
+	}()
 
-	fmt.Fprintf(w, "added %d entries in %v", count, time.Since(start))
+	fmt.Fprintf(w, "dispatched update job")
 }
