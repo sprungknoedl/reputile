@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -18,14 +19,26 @@ func HandleError(w http.ResponseWriter, r *http.Request, err error) {
 	fmt.Fprintf(w, "ERROR: %v", err)
 }
 
+func FilterMap(values url.Values) map[string]string {
+	m := make(map[string]string)
+	for key, value := range values {
+		if len(value) > 0 {
+			m[key] = value[0]
+		}
+	}
+	return m
+}
+
 func GetDatabase(w http.ResponseWriter, r *http.Request) {
 	ctx := NewContext(r)
-	ch := Find(ctx, nil)
+
+	filter := FilterMap(r.URL.Query())
+	entries := Find(ctx, filter)
 
 	w.Header().Add("content-type", "text/csv")
 	writer := csv.NewWriter(w)
 
-	for entry := range ch {
+	for entry := range entries {
 		if entry.Err != nil {
 			HandleError(w, r, entry.Err)
 			return
@@ -63,6 +76,7 @@ func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
 			}
 
 			count++
+			logrus.Printf("entry: %+v", entry)
 			err := Store(ctx, entry)
 			if err != nil {
 				logrus.Errorf("failed to store entry: %v", err)

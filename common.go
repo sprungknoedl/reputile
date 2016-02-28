@@ -59,7 +59,70 @@ func Combine(lists ...List) List {
 	}
 }
 
+func TSV(url string, fn Translator) List {
+	ctor := func(r io.Reader) *csv.Reader {
+		reader := csv.NewReader(r)
+		reader.Comma = '\t'
+		reader.Comment = '#'
+		reader.TrimLeadingSpace = true
+		reader.FieldsPerRecord = -1
+		return reader
+	}
+
+	return csvlist(url, fn, ctor)
+}
+
+func SSV(url string, fn Translator) List {
+	ctor := func(r io.Reader) *csv.Reader {
+		reader := csv.NewReader(r)
+		reader.Comma = ' '
+		reader.Comment = '#'
+		reader.TrimLeadingSpace = true
+		reader.FieldsPerRecord = -1
+		return reader
+	}
+
+	return csvlist(url, fn, ctor)
+}
+
+func SSV2(url string, fn Translator) List {
+	ctor := func(r io.Reader) *csv.Reader {
+		reader := csv.NewReader(r)
+		reader.Comma = ' '
+		reader.Comment = '/'
+		reader.TrimLeadingSpace = true
+		reader.FieldsPerRecord = -1
+		return reader
+	}
+
+	return csvlist(url, fn, ctor)
+}
+
 func CSV(url string, fn Translator) List {
+	ctor := func(r io.Reader) *csv.Reader {
+		reader := csv.NewReader(r)
+		reader.Comment = '#'
+		reader.TrimLeadingSpace = true
+		reader.FieldsPerRecord = -1
+		return reader
+	}
+
+	return csvlist(url, fn, ctor)
+}
+
+func CSV2(url string, fn Translator) List {
+	ctor := func(r io.Reader) *csv.Reader {
+		reader := csv.NewReader(r)
+		reader.Comment = '/'
+		reader.TrimLeadingSpace = true
+		reader.FieldsPerRecord = -1
+		return reader
+	}
+
+	return csvlist(url, fn, ctor)
+}
+
+func csvlist(url string, fn Translator, ctor func(io.Reader) *csv.Reader) List {
 	return func(ctx context.Context) chan *Entry {
 		out := make(chan *Entry)
 
@@ -73,9 +136,7 @@ func CSV(url string, fn Translator) List {
 			}
 
 			defer resp.Body.Close()
-
-			reader := csv.NewReader(resp.Body)
-			reader.Comment = '#'
+			reader := ctor(resp.Body)
 
 			for {
 				row, err := reader.Read()
@@ -88,8 +149,13 @@ func CSV(url string, fn Translator) List {
 					break
 				}
 
+				e := fn(row)
+				if e == nil {
+					continue
+				}
+
 				select {
-				case out <- fn(row):
+				case out <- e:
 				case <-ctx.Done():
 					out <- SendError(ctx.Err())
 					break

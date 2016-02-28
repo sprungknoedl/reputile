@@ -70,17 +70,6 @@ func (e Entry) Key() string {
 	return fmt.Sprintf("%s|%s|%s", e.Source, e.Domain, e.IP4)
 }
 
-// queryTable contains the translation from reputile query parameters to
-// App Engine Datastore filters.
-var queryTable = map[string]string{
-	"source":      "Source =",
-	"domain":      "Domain =",
-	"ip4":         "IP4 =",
-	"last":        "Last >",
-	"category":    "Category =",
-	"description": "description =",
-}
-
 func Store(ctx context.Context, e *Entry) error {
 	db := ctx.Value(databaseKey).(*Datastore)
 	_, err := db.Exec("create-entry",
@@ -88,7 +77,7 @@ func Store(ctx context.Context, e *Entry) error {
 		e.Source,
 		e.Domain,
 		e.IP4,
-		e.Last,
+		time.Now(),
 		e.Category,
 		e.Description)
 	return err
