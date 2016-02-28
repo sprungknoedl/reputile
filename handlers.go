@@ -76,13 +76,11 @@ func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
 			}
 
 			count++
-			logrus.Printf("entry: %+v", entry)
 			err := Store(ctx, entry)
 			if err != nil {
 				logrus.Errorf("failed to store entry: %v", err)
 				return
 			}
-
 		}
 
 		logrus.Printf("added %d entries in %v", count, time.Since(start))

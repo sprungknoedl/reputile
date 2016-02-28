@@ -7,11 +7,11 @@ import (
 
 func init() {
 	Lists = append(Lists,
-		// badips,
-		// bambenekconsulting,
-		// cinsscore,
-		// malwaredomainlist,
-		//malwaredomains,
+		badips,
+		bambenekconsulting,
+		cinsscore,
+		malwaredomainlist,
+		malwaredomains,
 		malc0de,
 	)
 }
