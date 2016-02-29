@@ -30,7 +30,7 @@ func main() {
 	}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/database.csv", GetDatabase)
+	router.HandleFunc("/api/database.txt", GetDatabase)
 	router.HandleFunc("/_internal/update", UpdateDatabase)
 
 	middle := interpose.New()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx"
 
 	"golang.org/x/net/context"
@@ -83,13 +84,43 @@ func Store(ctx context.Context, e *Entry) error {
 	return err
 }
 
+var (
+	psql             = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	queryTranslation = map[string]string{
+		"source":      "source = ?",
+		"domain":      "domain = ?",
+		"ip4":         "ip4 = ?",
+		"last":        "last > ?",
+		"category":    "category = ?",
+		"description": "description = ?",
+	}
+)
+
 func Find(ctx context.Context, query map[string]string) chan *Entry {
 	ch := make(chan *Entry)
 	db := ctx.Value(databaseKey).(*Datastore)
 
 	go func() {
 		defer close(ch)
-		rows, err := db.Query("read-entry")
+
+		builder := psql.
+			Select("source", "domain", "ip4", "last", "category", "description").
+			From("entries").
+			OrderBy("source", "domain", "ip4")
+
+		for key, value := range query {
+			if pred, ok := queryTranslation[key]; ok {
+				builder = builder.Where(pred, value)
+			}
+		}
+
+		sql, args, err := builder.ToSql()
+		if err != nil {
+			ch <- SendError(err)
+			return
+		}
+
+		rows, err := db.Query(sql, args...)
 		if err != nil {
 			ch <- SendError(err)
 			return

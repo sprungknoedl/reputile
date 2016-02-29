@@ -8,6 +8,10 @@
 			"Rev": "056c9bc7be7190eaa7715723883caffa5f8fa3e4"
 		},
 		{
+			"ImportPath": "github.com/Masterminds/squirrel",
+			"Rev": "7ed60807eee5f32ec15e57ccb4e11df4da9e7d05"
+		},
+		{
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.9.0-15-g219c8cb",
 			"Rev": "219c8cb75c258c552e999735be6df753ffc7afdc"
@@ -37,6 +41,14 @@
 		{
 			"ImportPath": "github.com/kr/text",
 			"Rev": "bb797dc4fb8320488f47bf11de07a733d7233e1f"
+		},
+		{
+			"ImportPath": "github.com/lann/builder",
+			"Rev": "f22ce00fd9394014049dad11c244859432bd6820"
+		},
+		{
+			"ImportPath": "github.com/lann/ps",
+			"Rev": "62de8c46ede02a7675c4c79c84883eb164cb71e3"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",

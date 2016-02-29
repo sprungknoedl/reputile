@@ -35,7 +35,7 @@ func GetDatabase(w http.ResponseWriter, r *http.Request) {
 	filter := FilterMap(r.URL.Query())
 	entries := Find(ctx, filter)
 
-	w.Header().Add("content-type", "text/csv")
+	w.Header().Add("content-type", "text/plain")
 	writer := csv.NewWriter(w)
 
 	for entry := range entries {

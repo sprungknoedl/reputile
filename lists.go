@@ -94,7 +94,7 @@ var malwaredomains = TSV(
 				Source:      "malwaredomains.com",
 				Domain:      row[1],
 				Category:    row[2],
-				Description: fmt.Sprintf("%q marked it as %q", row[3], row[2]),
+				Description: fmt.Sprintf("%s marked it as %s", row[3], row[2]),
 			}
 		} else {
 			// row has no next validation info, this tricks the csv parser
@@ -102,7 +102,7 @@ var malwaredomains = TSV(
 				Source:      "malwaredomains.com",
 				Domain:      row[0],
 				Category:    row[1],
-				Description: fmt.Sprintf("%q marked it as %q", row[2], row[1]),
+				Description: fmt.Sprintf("%s marked it as %s", row[2], row[1]),
 			}
 		}
 
