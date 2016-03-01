@@ -31,9 +31,11 @@ func FilterMap(values url.Values) map[string]string {
 
 func GetDatabase(w http.ResponseWriter, r *http.Request) {
 	ctx := NewContext(r)
+	start := time.Now()
 
 	filter := FilterMap(r.URL.Query())
 	entries := Find(ctx, filter)
+	logrus.Printf("query %q; find took %v", r.URL.RawQuery, time.Since(start))
 
 	w.Header().Add("content-type", "text/plain")
 	writer := csv.NewWriter(w)
@@ -56,6 +58,7 @@ func GetDatabase(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	logrus.Printf("query %q; writing took %v", r.URL.RawQuery, time.Since(start))
 	writer.Flush()
 }
 
