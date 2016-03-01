@@ -1,31 +1,29 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx"
+	_ "github.com/lib/pq"
 
 	"golang.org/x/net/context"
 )
 
 type Datastore struct {
-	*pgx.Conn
+	*sql.DB
+	create *sql.Stmt
 }
 
 func NewDatastore(url string) (*Datastore, error) {
-	cfg, err := pgx.ParseURI(url)
+	conn, err := sql.Open("postgres", url)
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := pgx.Connect(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = conn.Prepare("create-entry", `
+	store := &Datastore{conn, nil}
+	store.create, err = conn.Prepare(`
 		INSERT INTO entries
 			(key, source, domain, ip4, last, category, description)
 		VALUES
@@ -36,29 +34,16 @@ func NewDatastore(url string) (*Datastore, error) {
 		return nil, err
 	}
 
-	_, err = conn.Prepare("read-entry", `
-	SELECT 
-		source, domain, ip4, last, category, description
-	FROM
-		entries
-	ORDER BY
-		source DESC,
-		domain DESC,
-		ip4 DESC`)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Datastore{conn}, nil
+	return store, nil
 }
 
 type Entry struct {
-	Source      string    `db:"source"`
-	Domain      string    `db:"domain"`
-	IP4         string    `db:"ip4"`
-	Last        time.Time `db:"last"`
-	Category    string    `db:"category"`
-	Description string    `db:"description"`
+	Source      string
+	Domain      string
+	IP4         string
+	Last        time.Time
+	Category    string
+	Description string
 
 	Err error
 }
@@ -73,7 +58,7 @@ func (e Entry) Key() string {
 
 func Store(ctx context.Context, e *Entry) error {
 	db := ctx.Value(databaseKey).(*Datastore)
-	_, err := db.Exec("create-entry",
+	_, err := db.create.Exec(
 		e.Key(),
 		e.Source,
 		e.Domain,
@@ -114,13 +99,7 @@ func Find(ctx context.Context, query map[string]string) chan *Entry {
 			}
 		}
 
-		sql, args, err := builder.ToSql()
-		if err != nil {
-			ch <- SendError(err)
-			return
-		}
-
-		rows, err := db.Query(sql, args...)
+		rows, err := builder.RunWith(db.DB).Query()
 		if err != nil {
 			ch <- SendError(err)
 			return
