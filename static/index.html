@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>reputile</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/skeleton.css">
+  <link rel="stylesheet" href="/css/custom.css">
+
+	<link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+</head>
+<body>
+  <div class="container">
+		<section class="header">
+			<h1>reputile</h1>
+			<h3>unifying blacklist collector</h3>
+			<a class="button button-primary" href="/api/database.txt">Database</a>
+			<a class="button button-primary" href="https://github.com/sprungknoedl/reputile">Source</a>
+
+			<p>&nbsp;</p>
+
+			<div class="row">
+				<div class="four columns">
+					<p><i class="fa fa-5x fa-database"></i></p>
+					<h6>Comprehensive blacklist</h6>
+					reputile integrates a huge list of blacklists into one comprehensive database.
+				</div>
+
+				<div class="four columns">
+					<p><i class="fa fa-5x fa-barcode"></i></p>
+					<h6>Common format</h6>
+					All blacklists are translated into one format. Use hundreds of blacklists with
+					just one integration.
+				</div>
+
+				<div class="four columns">
+					<p><i class="fa fa-5x fa-search"></i></p>
+					<h6>Searchable</h6>
+					Search and filter the blacklist with simple queries. Or download the whole database.
+				</div>
+			</div>
+		</section>
+
+		<p class="header"><img src="/img/rawr.svg" alt="rawr dinosaur" width="25%"></p>
+
+		<p> <h6>Why reputile?</h6>
+		reputile is a platform that combines many different sources for reputation checks
+		into a single downloadable and queryable format. The database can be retrieved in
+		total or filtered based on user defined criterias.
+		</p>
+
+		<p>Because reputile does the hard work of collecting all those blacklists and
+		translating them into one format, you can focus on more important things!</p>
+
+		<p><h6>A common blacklist format</h6>
+		The reputile format strives to be in the most simple form possible to enable easy
+		usage in a variety of languages / tools. Because a lot of reputation sources 
+		allready use some form of CSV format, the reputile format is based on CSV (to be 
+		more specify RFC4180) as well. The the reputile format looks like:
+		<pre><code>source,domain,ip4,last,category,description</code></pre>
+		</p>
+
+		<p><h6>Querying reputile</h6>
+		The reputile database can be filtered with URL query parameters. Each
+		provided query paramter specifies a condition a row must satisfy. A query
+		to only return malicious domains or IPs is:
+		<pre><code>?category=malware</code></pre>
+		</p>
+
+		<p><h6>Commercial usage</h6>
+		reputile is a non-commercial community project that uses a variety of different
+		blacklist sources. Many sources are for non-commercial use only and therefore
+		reputile is as well.
+		</p>
+
+		<p class="header">
+		Made with <i class="fa fa-heart"></i> in Austria.<br />
+		<a href="https://github.com/sprungknoedl/reputile"><i class="fa fa-github"></i> Github</a>
+		</p>
+  </div>
+</body>
+</html>

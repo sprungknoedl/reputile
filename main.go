@@ -32,6 +32,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/api/database.txt", GetDatabase)
 	router.HandleFunc("/_internal/update", UpdateDatabase)
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
 
 	middle := interpose.New()
 	middle.Use(WithValue(databaseKey, conn))
