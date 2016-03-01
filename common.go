@@ -25,7 +25,12 @@ func ExtractHost(s string) string {
 		s = "http://" + s
 	}
 
-	u, _ := url.Parse(s)
+	u, err := url.Parse(s)
+	if err != nil {
+		//logrus.Printf("failed to parse %q: %v", s, err)
+		return ""
+	}
+
 	return u.Host
 }
 

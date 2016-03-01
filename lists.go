@@ -13,6 +13,7 @@ func init() {
 		malwaredomainlist,
 		malwaredomains,
 		malc0de,
+		phishtank,
 	)
 }
 
@@ -141,3 +142,25 @@ var malc0de = Combine(
 				Description: "distributed malware in the last 30 days",
 			}
 		}))
+
+var phishtank = CSV(
+	"http://data.phishtank.com/data/online-valid.csv",
+	func(row []string) *Entry {
+		if row[0] == "phish_id" {
+			// header line
+			return nil
+		}
+
+		domain := ExtractHost(row[1])
+		if domain == "" {
+			return nil
+		}
+
+		return &Entry{
+			Source:      "phishtank.com",
+			Domain:      domain,
+			Category:    "phishing",
+			Description: "Domain hosts web pages used for phishing",
+		}
+	},
+)
