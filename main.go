@@ -30,7 +30,7 @@ func main() {
 	}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/api/database.txt", GetDatabase)
+	router.HandleFunc("/lists/database.txt", GetDatabase)
 	router.HandleFunc("/_internal/update", UpdateDatabase)
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
 
