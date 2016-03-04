@@ -14,6 +14,9 @@ func init() {
 		malwaredomains,
 		malc0de,
 		phishtank,
+		autoshun,
+		blocklist,
+		bruteforceblocker,
 	)
 }
 
@@ -161,6 +164,44 @@ var phishtank = CSV(
 			Domain:      domain,
 			Category:    "phishing",
 			Description: "Domain hosts web pages used for phishing",
+		}
+	},
+)
+
+var autoshun = CSV(
+	"https://www.autoshun.org/files/shunlist.csv",
+	func(row []string) *Entry {
+		if len(row) < 3 {
+			return nil
+		}
+
+		return &Entry{
+			Source:      "autoshun.org",
+			IP4:         row[0],
+			Category:    "attacker",
+			Description: row[2],
+		}
+	},
+)
+
+var blocklist = CSV(
+	"http://lists.blocklist.de/lists/all.txt",
+	func(row []string) *Entry {
+		return &Entry{
+			Source:   "blocklist.de",
+			IP4:      row[0],
+			Category: "attacker",
+		}
+	},
+)
+
+var bruteforceblocker = TSV(
+	"http://danger.rulez.sk/projects/bruteforceblocker/blist.php",
+	func(row []string) *Entry {
+		return &Entry{
+			Source:   "rulez.sk",
+			IP4:      row[0],
+			Category: "attacker",
 		}
 	},
 )
