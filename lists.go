@@ -9,7 +9,7 @@ func init() {
 	Lists = append(Lists,
 		badips,
 		bambenekconsulting,
-		cinsscore,
+		//cinsscore,
 		malwaredomainlist,
 		malwaredomains,
 		malc0de,
