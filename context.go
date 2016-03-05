@@ -11,6 +11,7 @@ type key int
 
 const (
 	requestKey     key = iota
+	cacheKey       key = iota
 	databaseKey    key = iota
 	transactionKey key = iota
 )

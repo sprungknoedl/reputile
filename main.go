@@ -5,6 +5,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/carbocation/interpose"
+	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -21,10 +22,16 @@ func config() {
 
 func main() {
 	config()
-	db := viper.GetString("database_url")
+	databaseURL := viper.GetString("database_url")
+	redisURL := viper.GetString("redis_url")
 	port := viper.GetString("port")
 
-	conn, err := NewDatastore(db)
+	store, err := NewDatastore(databaseURL)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	cache, err := redis.DialURL(redisURL)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -35,7 +42,8 @@ func main() {
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
 
 	middle := interpose.New()
-	middle.Use(WithValue(databaseKey, conn))
+	middle.Use(WithValue(cacheKey, cache))
+	middle.Use(WithValue(databaseKey, store))
 	middle.UseHandler(router)
 
 	logrus.Printf("listening on :%s", port)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"net/http"
@@ -29,21 +30,19 @@ func FilterMap(values url.Values) map[string]string {
 	return m
 }
 
-func GetDatabase(w http.ResponseWriter, r *http.Request) {
-	ctx := NewContext(r)
+func CalculateDatabase(ctx context.Context, key string) ([]byte, error) {
 	start := time.Now()
+	buffer := &bytes.Buffer{}
 
+	r := ctx.Value(requestKey).(*http.Request)
 	filter := FilterMap(r.URL.Query())
 	entries := Find(ctx, filter)
-	logrus.Printf("query %q; find took %v", r.URL.RawQuery, time.Since(start))
+	logrus.Printf("query %q; find took %v", key, time.Since(start))
 
-	w.Header().Add("content-type", "text/plain")
-	writer := csv.NewWriter(w)
-
+	writer := csv.NewWriter(buffer)
 	for entry := range entries {
 		if entry.Err != nil {
-			HandleError(w, r, entry.Err)
-			return
+			return []byte{}, entry.Err
 		}
 
 		// csv format
@@ -60,6 +59,22 @@ func GetDatabase(w http.ResponseWriter, r *http.Request) {
 
 	logrus.Printf("query %q; writing took %v", r.URL.RawQuery, time.Since(start))
 	writer.Flush()
+
+	err := writer.Error()
+	return buffer.Bytes(), err
+}
+
+func GetDatabase(w http.ResponseWriter, r *http.Request) {
+	ctx := NewContext(r)
+
+	buf, err := Cache(ctx, r.URL.RawQuery, CalculateDatabase)
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
+
+	w.Header().Add("content-type", "text/plain")
+	w.Write(buf)
 }
 
 func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
