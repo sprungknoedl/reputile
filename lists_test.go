@@ -52,6 +52,10 @@ func TestPhishtank(t *testing.T) {
 	test(t, phishtank)
 }
 
+func TestAbuseCh(t *testing.T) {
+	test(t, abusech)
+}
+
 func test(t *testing.T, list List) {
 	t.Parallel()
 	ctx := context.Background()

@@ -17,6 +17,7 @@ func init() {
 		autoshun,
 		blocklist,
 		bruteforceblocker,
+		abusech,
 	)
 }
 
@@ -205,3 +206,36 @@ var bruteforceblocker = TSV(
 		}
 	},
 )
+
+var abusech = func() List {
+	domain := func(description string) func(row []string) *Entry {
+		return func(row []string) *Entry {
+			return &Entry{
+				Source:      "abuse.ch",
+				Domain:      row[0],
+				Category:    "malware",
+				Description: description,
+			}
+		}
+	}
+
+	ip := func(description string) func(row []string) *Entry {
+		return func(row []string) *Entry {
+			return &Entry{
+				Source:      "abuse.ch",
+				IP4:         row[0],
+				Category:    "malware",
+				Description: description,
+			}
+		}
+	}
+
+	return Combine(
+		CSV("https://zeustracker.abuse.ch/blocklist.php?download=baddomains", domain("ZeuS C&C server")),
+		CSV("https://zeustracker.abuse.ch/blocklist.php?download=badips", ip("ZeuS C&C server")),
+		CSV("https://feodotracker.abuse.ch/blocklist/?download=domainblocklist", domain("Feodo trojan C&C server")),
+		CSV("https://feodotracker.abuse.ch/blocklist/?download=badips", ip("Feodo trojan C&C server")),
+		CSV("https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt", domain("Ransomware botnet C&C traffic")),
+		CSV("https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt", ip("Ransomware botnet C&C traffic")),
+	)
+}()
