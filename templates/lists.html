@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>reputile</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/skeleton.css">
+  <link rel="stylesheet" href="/css/custom.css">
+
+	<link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+</head>
+<body>
+  <div class="container">
+		<section class="header">
+			<h1>reputile <sup>beta</sup></h1>
+			<p><a href="/">Back to main page</a></p>
+
+			<p>Hare are some recent statistics from reputile. If you want bigger numbers reach out to me on <a href="https://github.com/sprungknoedl/reputile">github</a> ;).</p>
+
+			<div class="row">
+				<div class="four columns">
+					<p><i class="fa fa-5x fa-sitemap"></i></p>
+					<strong>{{ .blacklists }}</strong><br />
+					blacklists
+				</div>
+
+				<div class="four columns">
+					<p><i class="fa fa-5x fa-file"></i></p>
+					<strong>{{ .entries }}</strong><br />
+					entries
+				</div>
+
+				<div class="four columns">
+					<p><i class="fa fa-5x fa-cloud-download"></i></p>
+					<strong>{{ .downloads }}</strong><br />
+					downloads
+				</div>
+			</div>
+		</section>
+
+		<p class="header"><img src="/img/rawr.svg" alt="rawr dinosaur" width="100px"></p>
+
+		<p> 
+		The following blacklist sources are currently integrated into reputile. If you know
+		of any others or want a description changed, please create an <a href="https://github.com/sprungknoedl/reputile/issues">issue on github</a>	for it.
+		</p>
+
+		<p> <h6>AutoShun</h6>
+		AutoShun is a Snort plugin that allows you to send your Snort IDS logs to a centralized 
+		server that will correlate attacks from your sensor logs with other snort sensors, honeypots, 
+		and mail filters from around the world.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="https://www.autoshun.org/">autoshun.org</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=autoshun.org">database</a>
+		</p>
+
+		<p> <h6>badips.com</h6>
+		badips.com is a community based IP blacklist service. You can report malicious IPs to 
+		badips.com and you can download blacklists or query their API to find out if a IP is listed.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="https://www.badips.com/">badips.com</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=badips.com">database</a>
+		</p>
+
+		<p> <h6>Bambenek Consulting OSINT</h6>
+		Bambenek Consulting is an IT consulting firm focused on cybersecurity and cybercrime. Every
+		day, there is another story about another company having their banking accounts drained, 
+		someone having their identity stolen, or critical infrastructure being taken offline by hostile
+		entities.  Led by IT security expert, John Bambenek, we have the resources to bring to your 
+		business so you can be sure your organization and your customers’ data is safe.  And when 
+		disaster does strike, you know you can count on us to be with you every step of the way as you 
+		recover from an incident.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="http://www.bambenekconsulting.com/">bambenekconsulting.com</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=bambenekconsulting.com">database</a>
+		</p>
+
+		<p> <h6>blocklist.de</h6>
+		www.blocklist.de is a free and voluntary service provided by a Fraud/Abuse-specialist, whose
+		servers are often attacked on SSH-, Mail-Login-, FTP-, Webserver- and other services.
+		The mission is to report all attacks to the abuse deparments of the infected PCs/servers to 
+		ensure that the responsible provider can inform the customer about the infection and disable them.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="http://www.blocklist.de/en/index.html">blocklist.de</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=blocklist.de">database</a>
+		</p>
+
+		<p> <h6>BruteForceBlocker</h6>
+		BruteForceBlocker is a perl script, that works along with pf. Its main purpose is to block SSH 
+		bruteforce attacks via firewall. When this script is running, it checks sshd logs from syslog 
+		and looks for failed login attempts and counts the number of such attempts. When a given IP 
+		reaches the configured limit of fails, the script puts this IP to the pf’s table and block 
+		any further traffic to the that box from the given IP.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="http://danger.rulez.sk/index.php/bruteforceblocker/">danger.rulez.sk</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=rulez.sk">database</a>
+		</p>
+
+		<p> <h6>CI Army List</h6>
+		The CI Army list is a subset of the CINS Active Threat Intelligence ruleset, and consists of IP 
+		addresses that meet two basic criteria: 1) The IP's recent Rogue Packet score factor is very poor,
+		and 2) The InfoSec community has not yet identified the IP as malicious.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="http://cinsscore.com/">cinsscore.com</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=cinsscore.com">database</a>
+		</p>
+
+		<p> <h6>malc0de</h6>
+		malc0de is an updated database of domains hosting malicious executables during the last 30 days.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="http://malc0de.com/dashboard/">malc0de.com</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=malc0de.com">database</a>
+		</p>
+
+		<p> <h6>malwaredomainlist</h6>
+		Malware Domain List features a list of malware-related sites plus a discussion forum on new threats.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="https://www.malwaredomainlist.com/">malwaredomainlist.com</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=malwaredomainlist.com">database</a>
+		</p>
+
+		<p> <h6>DNS-BH – Malware Domain Blocklist</h6>
+		The DNS-BH project creates and maintains a listing of domains that are known to be used to propagate 
+		malware and spyware. This project creates the Bind and Windows zone files required to serve fake replies 
+		to localhost for any requests to these, thus preventing many spyware installs and reporting.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="http://www.malwaredomains.com/">malwaredomains.com</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=malwaredomains.com">database</a>
+		</p>
+
+		<p> <h6>PhishTank</h6>
+		PhishTank is a free community site where anyone can submit, verify, track and share phishing data.
+		</p>
+
+		<p>
+		<i class="fa fa-fw fa-home"></i> <a href="http://www.phishtank.com/">phishtank.com</a> &emsp;
+		<i class="fa fa-fw fa-download"></i> <a href="/lists/database.txt?source=phishtank.com">database</a>
+		</p>
+
+		<p class="footer">
+		Made with <i class="fa fa-heart"></i> in Austria.<br />
+		<a href="https://github.com/sprungknoedl/reputile"><i class="fa fa-github"></i> Github</a>
+		</p>
+  </div>
+</body>
+</html>

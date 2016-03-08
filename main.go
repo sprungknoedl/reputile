@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
@@ -16,6 +17,7 @@ var Lists []List
 
 func config() {
 	viper.AutomaticEnv()
+	viper.SetDefault("debug", false)
 	viper.SetDefault("port", "3000")
 	viper.SetDefault("database_url", "postgres://localhost/reputile")
 }
@@ -37,11 +39,14 @@ func main() {
 	}
 
 	router := mux.NewRouter()
+	router.HandleFunc("/", GetIndex)
+	router.HandleFunc("/lists", GetLists)
 	router.HandleFunc("/lists/database.txt", GetDatabase)
 	router.HandleFunc("/_internal/update", UpdateDatabase)
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
 
 	middle := interpose.New()
+	middle.Use(Templates("templates/*.html"))
 	middle.Use(WithValue(cacheKey, cache))
 	middle.Use(WithValue(databaseKey, store))
 	middle.UseHandler(router)
@@ -50,6 +55,30 @@ func main() {
 	err = http.ListenAndServe(":"+port, middle)
 	if err != nil {
 		logrus.Fatal(err)
+	}
+}
+
+func Templates(pattern string) func(http.Handler) http.Handler {
+	debug := viper.GetBool("debug")
+	if debug {
+		// parse template on each request
+		return func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				tpl, err := template.ParseGlob(pattern)
+				if err != nil {
+					HandleError(w, r, err)
+					return
+				}
+
+				context.Set(r, templateKey, tpl)
+				next.ServeHTTP(w, r)
+			})
+		}
+
+	} else {
+		// cache parsed templates
+		tpl := template.Must(template.ParseGlob(pattern))
+		return WithValue(templateKey, tpl)
 	}
 }
 

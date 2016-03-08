@@ -131,3 +131,29 @@ func Find(ctx context.Context, query map[string]string) chan *Entry {
 
 	return ch
 }
+
+func CountEntries(ctx context.Context) (int, error) {
+	return getCount(ctx, `SELECT COUNT(*) FROM entries`)
+}
+
+func CountSources(ctx context.Context) (int, error) {
+	return getCount(ctx, `SELECT COUNT(DISTINCT(source)) FROM entries`)
+}
+
+func getCount(ctx context.Context, query string) (int, error) {
+	db := ctx.Value(databaseKey).(*Datastore)
+
+	count := 0
+	rows, err := db.Query(query)
+	if err != nil {
+		return 0, nil
+	}
+
+	// scan first row, queries should only return one but we are not
+	// enforcing this
+	rows.Next()
+	err = rows.Scan(&count)
+	rows.Close()
+
+	return count, err
+}

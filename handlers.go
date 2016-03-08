@@ -4,33 +4,51 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 
-	"golang.org/x/net/context"
-
 	"github.com/Sirupsen/logrus"
-	gorilla "github.com/gorilla/context"
+	"golang.org/x/net/context"
 )
 
-func HandleError(w http.ResponseWriter, r *http.Request, err error) {
-	w.WriteHeader(http.StatusInternalServerError)
-	fmt.Fprintf(w, "ERROR: %v", err)
+func GetIndex(w http.ResponseWriter, r *http.Request) {
+	HTML(w, r, "index.html", V{})
 }
 
-func FilterMap(values url.Values) map[string]string {
-	m := make(map[string]string)
-	for key, value := range values {
-		if len(value) > 0 {
-			m[key] = value[0]
-		}
+func GetLists(w http.ResponseWriter, r *http.Request) {
+	ctx := NewContext(r)
+
+	blacklists, err := Cache(ctx, "stats:blacklists", func(ctx context.Context, key string) (string, error) {
+		cnt, err := CountSources(ctx)
+		return strconv.Itoa(cnt), err
+	})
+	if err != nil {
+		HandleError(w, r, err)
+		return
 	}
-	return m
+
+	entries, err := Cache(ctx, "stats:entries", func(ctx context.Context, key string) (string, error) {
+		cnt, err := CountEntries(ctx)
+		return strconv.Itoa(cnt), err
+	})
+	if err != nil {
+		HandleError(w, r, err)
+		return
+	}
+
+	downloads := GetCounter(ctx, "stats:downloads")
+
+	HTML(w, r, "lists.html", V{
+		"blacklists": blacklists,
+		"entries":    entries,
+		"downloads":  downloads,
+	})
 }
 
-func CalculateDatabase(ctx context.Context, key string) ([]byte, error) {
+func CalculateDatabase(ctx context.Context, key string) (string, error) {
 	start := time.Now()
 	buffer := &bytes.Buffer{}
 
@@ -42,7 +60,7 @@ func CalculateDatabase(ctx context.Context, key string) ([]byte, error) {
 	writer := csv.NewWriter(buffer)
 	for entry := range entries {
 		if entry.Err != nil {
-			return []byte{}, entry.Err
+			return "", entry.Err
 		}
 
 		// csv format
@@ -61,25 +79,25 @@ func CalculateDatabase(ctx context.Context, key string) ([]byte, error) {
 	writer.Flush()
 
 	err := writer.Error()
-	return buffer.Bytes(), err
+	return buffer.String(), err
 }
 
 func GetDatabase(w http.ResponseWriter, r *http.Request) {
 	ctx := NewContext(r)
-
-	buf, err := Cache(ctx, r.URL.RawQuery, CalculateDatabase)
+	list, err := Cache(ctx, r.URL.RawQuery, CalculateDatabase)
 	if err != nil {
 		HandleError(w, r, err)
 		return
 	}
 
-	w.Header().Add("content-type", "text/plain")
-	w.Write(buf)
+	IncrCounter(ctx, "stats:downloads")
+	w.Header().Add("content-type", "text/plain;charset=utf-8")
+	w.Write([]byte(list))
 }
 
 func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
 	// create new background context & copy db handle
-	db := gorilla.Get(r, databaseKey).(*Datastore)
+	db := NewContext(r).Value(databaseKey).(*Datastore)
 	ctx := context.WithValue(context.Background(), databaseKey, db)
 
 	go func() {
@@ -105,4 +123,31 @@ func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	fmt.Fprintf(w, "dispatched update job")
+}
+
+type V map[string]interface{}
+
+func HTML(w http.ResponseWriter, r *http.Request, name string, data interface{}) {
+	ctx := NewContext(r)
+	tpl := ctx.Value(templateKey).(*template.Template)
+
+	err := tpl.ExecuteTemplate(w, name, data)
+	if err != nil {
+		logrus.Printf("error during template %q: %v", name, err)
+	}
+}
+
+func HandleError(w http.ResponseWriter, r *http.Request, err error) {
+	w.WriteHeader(http.StatusInternalServerError)
+	fmt.Fprintf(w, "ERROR: %v", err)
+}
+
+func FilterMap(values url.Values) map[string]string {
+	m := make(map[string]string)
+	for key, value := range values {
+		if len(value) > 0 {
+			m[key] = value[0]
+		}
+	}
+	return m
 }

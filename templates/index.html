@@ -16,7 +16,7 @@
 <body>
   <div class="container">
 		<section class="header">
-			<h1>reputile</h1>
+			<h1>reputile <sup>beta</sup></h1>
 			<h3>unifying blacklist collector</h3>
 			<a class="button button-primary" href="/lists/database.txt">Database</a>
 			<a class="button button-primary" href="https://github.com/sprungknoedl/reputile">Source</a>
@@ -33,7 +33,7 @@
 				<div class="four columns">
 					<p><i class="fa fa-5x fa-barcode"></i></p>
 					<h6>Common format</h6>
-					All blacklists are translated into one format. Use hundreds of blacklists with
+					All blacklists are translated into one format. Use dozens of blacklists with
 					just one integration.
 				</div>
 
@@ -56,28 +56,37 @@
 		<p>Because reputile does the hard work of collecting all those blacklists and
 		translating them into one format, you can focus on more important things!</p>
 
-		<p><h6>A common blacklist format</h6>
-		The reputile format strives to be in the most simple form possible to enable easy
-		usage in a variety of languages / tools. Because a lot of reputation sources 
-		allready use some form of CSV format, the reputile format is based on CSV (to be 
-		more specify RFC4180) as well. The the reputile format looks like:
+		<p><h6>What format does your database use?</h6>
+		The format strives to be the most simple to parse and work with. This enables you to use
+		a wide variety of languages and tools. Because a lot of reputation sources 
+		allready use some form of CSV format, reputile uses CSV (to be 
+		more precise RFC4180) as well. The the columns of our database are:
 		<pre><code>source,domain,ip4,last,category,description</code></pre>
 		</p>
 
-		<p><h6>Querying reputile</h6>
+		<p><h6>How can I filter the resulst?</h6>
 		The reputile database can be filtered with URL query parameters. Each
 		provided query paramter specifies a condition a row must satisfy. A query
 		to only return malicious domains or IPs is:
 		<pre><code>?category=malware</code></pre>
 		</p>
 
-		<p><h6>Commercial usage</h6>
-		reputile is a non-commercial community project that uses a variety of different
+		<p><h6>Is it ready?</h6>
+		Not yet. reputile is still very much a work in progress. Still some people are already
+		using it. You cand find the current statistics <a href="/lists">here</a>.
+		<p>
+
+		<p><h6>What blacklists does reputile include?</h6>
+		You can find a detailed listing of included backlists <a href="/lists">here</a>.
+		<p>
+
+		<p><h6>Can I use reputile commercially?</h6>
+		No. reputile is a non-commercial community project that uses a variety of different
 		blacklist sources. Many sources are for non-commercial use only and therefore
 		reputile is as well.
 		</p>
 
-		<p class="header">
+		<p class="footer">
 		Made with <i class="fa fa-heart"></i> in Austria.<br />
 		<a href="https://github.com/sprungknoedl/reputile"><i class="fa fa-github"></i> Github</a>
 		</p>

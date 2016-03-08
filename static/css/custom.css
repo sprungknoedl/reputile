@@ -1,3 +1,4 @@
 .container { max-width: 800px; }
-.header { margin-top: 6rem; text-align: center; }
+.header, .footer { margin-top: 6rem; text-align: center; }
 h6 { font-weight: bold; }
+h1 sup { color: #33C3F0; }
