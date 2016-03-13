@@ -1,8 +1,10 @@
-package main
+package lists
 
 import (
 	"fmt"
 	"strings"
+
+	"github.com/sprungknoedl/reputile/model"
 )
 
 func init() {
@@ -22,9 +24,9 @@ func init() {
 }
 
 var badips = func() List {
-	fn := func(category, description string) func(row []string) *Entry {
-		return func(row []string) *Entry {
-			return &Entry{
+	fn := func(category, description string) func(row []string) *model.Entry {
+		return func(row []string) *model.Entry {
+			return &model.Entry{
 				Source:      "badips.com",
 				IP4:         row[0],
 				Category:    category,
@@ -42,8 +44,8 @@ var badips = func() List {
 
 var bambenekconsulting = CSV(
 	"http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist.txt",
-	func(row []string) *Entry {
-		return &Entry{
+	func(row []string) *model.Entry {
+		return &model.Entry{
 			Source:      "bambenekconsulting.com",
 			IP4:         row[0],
 			Category:    "malware",
@@ -53,8 +55,8 @@ var bambenekconsulting = CSV(
 
 var cinsscore = CSV(
 	"http://cinsscore.com/list/ci-badguys.txt",
-	func(row []string) *Entry {
-		return &Entry{
+	func(row []string) *model.Entry {
+		return &model.Entry{
 			Source:      "cinsscore.com",
 			IP4:         row[0],
 			Category:    "malware",
@@ -64,8 +66,8 @@ var cinsscore = CSV(
 
 var malwaredomainlist = CSV(
 	"http://www.malwaredomainlist.com/mdlcsv.php",
-	func(row []string) *Entry {
-		return &Entry{
+	func(row []string) *model.Entry {
+		return &model.Entry{
 			Source:      "malwaredomainlist.com",
 			Domain:      ExtractHost(row[1]),
 			IP4:         ExtractHost(row[2]),
@@ -91,11 +93,11 @@ var malwaredomainsCategories = map[string]string{
 
 var malwaredomains = TSV(
 	"http://mirror1.malwaredomains.com/files/domains.txt",
-	func(row []string) *Entry {
-		var e *Entry
+	func(row []string) *model.Entry {
+		var e *model.Entry
 		if strings.HasPrefix(row[0], "20") {
 			// row has a next validation info
-			e = &Entry{
+			e = &model.Entry{
 				Source:      "malwaredomains.com",
 				Domain:      row[1],
 				Category:    row[2],
@@ -103,7 +105,7 @@ var malwaredomains = TSV(
 			}
 		} else {
 			// row has no next validation info, this tricks the csv parser
-			e = &Entry{
+			e = &model.Entry{
 				Source:      "malwaredomains.com",
 				Domain:      row[0],
 				Category:    row[1],
@@ -121,12 +123,12 @@ var malwaredomains = TSV(
 
 var malc0de = Combine(
 	SSV2("http://malc0de.com/bl/BOOT",
-		func(row []string) *Entry {
+		func(row []string) *model.Entry {
 			if len(row) < 2 {
 				return nil
 			}
 
-			return &Entry{
+			return &model.Entry{
 				Source:      "malc0de.com",
 				Domain:      row[1],
 				Category:    "malware",
@@ -134,12 +136,12 @@ var malc0de = Combine(
 			}
 		}),
 	CSV2("http://malc0de.com/bl/IP_Blacklist.txt",
-		func(row []string) *Entry {
+		func(row []string) *model.Entry {
 			if len(row) < 1 {
 				return nil
 			}
 
-			return &Entry{
+			return &model.Entry{
 				Source:      "malc0de.com",
 				IP4:         row[0],
 				Category:    "malware",
@@ -149,7 +151,7 @@ var malc0de = Combine(
 
 var phishtank = CSV(
 	"http://data.phishtank.com/data/online-valid.csv",
-	func(row []string) *Entry {
+	func(row []string) *model.Entry {
 		if row[0] == "phish_id" {
 			// header line
 			return nil
@@ -160,7 +162,7 @@ var phishtank = CSV(
 			return nil
 		}
 
-		return &Entry{
+		return &model.Entry{
 			Source:      "phishtank.com",
 			Domain:      domain,
 			Category:    "phishing",
@@ -171,12 +173,12 @@ var phishtank = CSV(
 
 var autoshun = CSV(
 	"https://www.autoshun.org/files/shunlist.csv",
-	func(row []string) *Entry {
+	func(row []string) *model.Entry {
 		if len(row) < 3 {
 			return nil
 		}
 
-		return &Entry{
+		return &model.Entry{
 			Source:      "autoshun.org",
 			IP4:         row[0],
 			Category:    "attacker",
@@ -187,8 +189,8 @@ var autoshun = CSV(
 
 var blocklist = CSV(
 	"http://lists.blocklist.de/lists/all.txt",
-	func(row []string) *Entry {
-		return &Entry{
+	func(row []string) *model.Entry {
+		return &model.Entry{
 			Source:   "blocklist.de",
 			IP4:      row[0],
 			Category: "attacker",
@@ -198,8 +200,8 @@ var blocklist = CSV(
 
 var bruteforceblocker = TSV(
 	"http://danger.rulez.sk/projects/bruteforceblocker/blist.php",
-	func(row []string) *Entry {
-		return &Entry{
+	func(row []string) *model.Entry {
+		return &model.Entry{
 			Source:   "rulez.sk",
 			IP4:      row[0],
 			Category: "attacker",
@@ -208,9 +210,9 @@ var bruteforceblocker = TSV(
 )
 
 var abusech = func() List {
-	domain := func(description string) func(row []string) *Entry {
-		return func(row []string) *Entry {
-			return &Entry{
+	domain := func(description string) func(row []string) *model.Entry {
+		return func(row []string) *model.Entry {
+			return &model.Entry{
 				Source:      "abuse.ch",
 				Domain:      row[0],
 				Category:    "malware",
@@ -219,9 +221,9 @@ var abusech = func() List {
 		}
 	}
 
-	ip := func(description string) func(row []string) *Entry {
-		return func(row []string) *Entry {
-			return &Entry{
+	ip := func(description string) func(row []string) *model.Entry {
+		return func(row []string) *model.Entry {
+			return &model.Entry{
 				Source:      "abuse.ch",
 				IP4:         row[0],
 				Category:    "malware",

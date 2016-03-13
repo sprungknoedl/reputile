@@ -1,4 +1,4 @@
-package main
+package lists
 
 import (
 	"encoding/csv"
@@ -9,12 +9,15 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/sprungknoedl/reputile/model"
 
 	"golang.org/x/net/context"
 )
 
-type List func(ctx context.Context) chan *Entry
-type Translator func(row []string) *Entry
+var Lists []List
+
+type List func(ctx context.Context) chan *model.Entry
+type Translator func(row []string) *model.Entry
 
 func ExtractHost(s string) string {
 	if s == "" || s == "-" {
@@ -35,13 +38,13 @@ func ExtractHost(s string) string {
 }
 
 func Combine(lists ...List) List {
-	return func(ctx context.Context) chan *Entry {
+	return func(ctx context.Context) chan *model.Entry {
 		wg := sync.WaitGroup{}
-		out := make(chan *Entry)
+		out := make(chan *model.Entry)
 
 		// Start an output goroutine for each input channel in lists. output
 		// copies values from c to out until c is closed, then calls wg.Done.
-		output := func(c chan *Entry) {
+		output := func(c chan *model.Entry) {
 			for entry := range c {
 				out <- entry
 			}
@@ -128,15 +131,15 @@ func CSV2(url string, fn Translator) List {
 }
 
 func csvlist(url string, fn Translator, ctor func(io.Reader) *csv.Reader) List {
-	return func(ctx context.Context) chan *Entry {
-		out := make(chan *Entry)
+	return func(ctx context.Context) chan *model.Entry {
+		out := make(chan *model.Entry)
 
 		go func() {
 			defer close(out)
 
 			resp, err := http.Get(url)
 			if err != nil {
-				out <- SendError(err)
+				out <- model.SendError(err)
 				return
 			}
 
@@ -150,7 +153,7 @@ func csvlist(url string, fn Translator, ctor func(io.Reader) *csv.Reader) List {
 				}
 
 				if err != nil {
-					out <- SendError(err)
+					out <- model.SendError(err)
 					break
 				}
 
@@ -162,7 +165,7 @@ func csvlist(url string, fn Translator, ctor func(io.Reader) *csv.Reader) List {
 				select {
 				case out <- e:
 				case <-ctx.Done():
-					out <- SendError(ctx.Err())
+					out <- model.SendError(ctx.Err())
 					break
 				}
 			}

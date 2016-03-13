@@ -1,10 +1,9 @@
-package main
+package lists
 
 import (
 	"testing"
 
 	"github.com/Sirupsen/logrus"
-
 	"golang.org/x/net/context"
 )
 

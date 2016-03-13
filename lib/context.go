@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"net/http"
@@ -7,13 +7,13 @@ import (
 	"golang.org/x/net/context"
 )
 
-type key int
+type Key int
 
 const (
-	requestKey  key = iota
-	cacheKey    key = iota
-	databaseKey key = iota
-	templateKey key = iota
+	RequestKey  Key = iota
+	CacheKey    Key = iota
+	DatabaseKey Key = iota
+	TemplateKey Key = iota
 )
 
 type wrapper struct {
@@ -26,7 +26,7 @@ func NewContext(r *http.Request) context.Context {
 }
 
 func (ctx *wrapper) Value(key interface{}) interface{} {
-	if key == requestKey {
+	if key == RequestKey {
 		return ctx.request
 	}
 

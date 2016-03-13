@@ -1,19 +1,19 @@
 package main
 
 import (
-	"html/template"
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/carbocation/interpose"
 	"github.com/garyburd/redigo/redis"
-	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
+	"github.com/sprungknoedl/reputile/handler"
+	"github.com/sprungknoedl/reputile/lib"
+	"github.com/sprungknoedl/reputile/middleware"
+	"github.com/sprungknoedl/reputile/model"
 )
-
-var Lists []List
 
 func config() {
 	viper.AutomaticEnv()
@@ -28,7 +28,7 @@ func main() {
 	redisURL := viper.GetString("redis_url")
 	port := viper.GetString("port")
 
-	store, err := NewDatastore(databaseURL)
+	store, err := model.NewDatastore(databaseURL)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -39,54 +39,21 @@ func main() {
 	}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", GetIndex)
-	router.HandleFunc("/lists", GetLists)
-	router.HandleFunc("/lists/database.txt", GetDatabase)
-	router.HandleFunc("/_internal/update", UpdateDatabase)
+	router.HandleFunc("/", handler.GetIndex)
+	router.HandleFunc("/lists", handler.GetLists)
+	router.HandleFunc("/lists/database.txt", handler.GetDatabase)
+	router.HandleFunc("/_internal/update", handler.UpdateDatabase)
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
 
 	middle := interpose.New()
-	middle.Use(Templates("templates/*.html"))
-	middle.Use(WithValue(cacheKey, cache))
-	middle.Use(WithValue(databaseKey, store))
+	middle.Use(middleware.Templates("templates/*.html"))
+	middle.Use(middleware.WithValue(lib.CacheKey, cache))
+	middle.Use(middleware.WithValue(lib.DatabaseKey, store))
 	middle.UseHandler(router)
 
 	logrus.Printf("listening on :%s", port)
 	err = http.ListenAndServe(":"+port, middle)
 	if err != nil {
 		logrus.Fatal(err)
-	}
-}
-
-func Templates(pattern string) func(http.Handler) http.Handler {
-	debug := viper.GetBool("debug")
-	if debug {
-		// parse template on each request
-		return func(next http.Handler) http.Handler {
-			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				tpl, err := template.ParseGlob(pattern)
-				if err != nil {
-					HandleError(w, r, err)
-					return
-				}
-
-				context.Set(r, templateKey, tpl)
-				next.ServeHTTP(w, r)
-			})
-		}
-
-	} else {
-		// cache parsed templates
-		tpl := template.Must(template.ParseGlob(pattern))
-		return WithValue(templateKey, tpl)
-	}
-}
-
-func WithValue(key, val interface{}) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			context.Set(r, key, val)
-			next.ServeHTTP(w, r)
-		})
 	}
 }

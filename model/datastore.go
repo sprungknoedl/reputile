@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"database/sql"
@@ -7,6 +7,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/lib/pq"
+	"github.com/sprungknoedl/reputile/lib"
 
 	"golang.org/x/net/context"
 )
@@ -57,7 +58,7 @@ func (e Entry) Key() string {
 }
 
 func Store(ctx context.Context, e *Entry) error {
-	db := ctx.Value(databaseKey).(*Datastore)
+	db := ctx.Value(lib.DatabaseKey).(*Datastore)
 	_, err := db.create.Exec(
 		e.Key(),
 		e.Source,
@@ -83,7 +84,7 @@ var (
 
 func Find(ctx context.Context, query map[string]string) chan *Entry {
 	ch := make(chan *Entry)
-	db := ctx.Value(databaseKey).(*Datastore)
+	db := ctx.Value(lib.DatabaseKey).(*Datastore)
 
 	go func() {
 		defer close(ch)
@@ -141,7 +142,7 @@ func CountSources(ctx context.Context) (int, error) {
 }
 
 func getCount(ctx context.Context, query string) (int, error) {
-	db := ctx.Value(databaseKey).(*Datastore)
+	db := ctx.Value(lib.DatabaseKey).(*Datastore)
 
 	count := 0
 	rows, err := db.Query(query)
