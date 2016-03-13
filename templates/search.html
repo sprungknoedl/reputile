@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>reputile</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/skeleton.css">
+  <link rel="stylesheet" href="/css/custom.css">
+
+	<link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+</head>
+<body>
+  <div class="container">
+		<section class="header">
+			<h1>reputile <sup>beta</sup></h1>
+			<p><a href="/">Back to main page</a></p>
+		</section>
+
+		<p>
+		<form class="centered" method="get" action="">
+			<input class="u-full-width" placeholder="example.com" name="q" value="{{ .search }}">
+			<input class="button-primary" type="submit" value="Search">
+		</form>
+		</p>
+
+		{{ if .search }}
+			<p>Your search for <b>{{ .search }}</b> produced <b>{{ len .entries }}</b> result(s).</p>
+
+			{{ if .entries }}
+			<table>
+				<thead>
+					<tr>
+						<th>Source</th>
+						<th>Domain</th>
+						<th>IPv4</th>
+						<th>Last added</th>
+						<th>Category</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					{{ range .entries }}
+					<tr>
+						<td><a href="/lists#{{ .Source }}">{{ .Source }}</a></td>
+						<td>{{ .Domain }}</td>
+						<td>{{ .IP4 }}</td>
+						<td>{{ .Last }}</td>
+						<td>{{ .Category }}</td>
+						<td>{{ .Description }}</td>
+					</tr>
+					{{ end }}
+				</tbody>
+			</table>
+			{{ else }}
+			<p>
+				Suggestions:
+				<ul>
+					<li>Make sure that the domain or IP address is spelled correctly.</li>
+					<li><b>Celebrate!</b> You are not blacklisted.</li>
+				</ul>
+			</p>
+			{{ end }}
+		{{ end }}
+
+  </div>
+</body>
+</html>

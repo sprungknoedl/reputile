@@ -17,7 +17,8 @@ import (
 
 func GetDatabase(w http.ResponseWriter, r *http.Request) {
 	ctx := lib.NewContext(r)
-	list, err := cache.String(ctx, r.URL.RawQuery, CalculateDatabase)
+	key := "list:" + r.URL.RawQuery
+	list, err := cache.String(ctx, key, CalculateDatabase)
 	if err != nil {
 		HandleError(w, r, err)
 		return

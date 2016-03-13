@@ -42,6 +42,7 @@ func main() {
 	router.HandleFunc("/", handler.GetIndex)
 	router.HandleFunc("/lists", handler.GetLists)
 	router.HandleFunc("/lists/database.txt", handler.GetDatabase)
+	router.HandleFunc("/search", handler.GetSearch)
 	router.HandleFunc("/_internal/update", handler.UpdateDatabase)
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
 
