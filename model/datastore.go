@@ -137,10 +137,6 @@ func CountEntries(ctx context.Context) (int, error) {
 	return getCount(ctx, `SELECT COUNT(*) FROM entries`)
 }
 
-func CountSources(ctx context.Context) (int, error) {
-	return getCount(ctx, `SELECT COUNT(DISTINCT(source)) FROM entries`)
-}
-
 func getCount(ctx context.Context, query string) (int, error) {
 	db := ctx.Value(lib.DatabaseKey).(*Datastore)
 

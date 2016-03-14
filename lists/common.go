@@ -16,36 +16,24 @@ import (
 
 var Lists []List
 
-type List func(ctx context.Context) chan *model.Entry
-type Translator func(row []string) *model.Entry
-
-func ExtractHost(s string) string {
-	if s == "" || s == "-" {
-		return ""
-	}
-
-	if !(strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")) {
-		s = "http://" + s
-	}
-
-	u, err := url.Parse(s)
-	if err != nil {
-		//logrus.Printf("failed to parse %q: %v", s, err)
-		return ""
-	}
-
-	return u.Host
+type List struct {
+	Key         string
+	Name        string
+	URL         string
+	Description string
+	Generator   Generator
 }
 
-func Combine(lists ...List) List {
+func Fetch(lists ...List) Generator {
 	return func(ctx context.Context) chan *model.Entry {
 		wg := sync.WaitGroup{}
 		out := make(chan *model.Entry)
 
 		// Start an output goroutine for each input channel in lists. output
 		// copies values from c to out until c is closed, then calls wg.Done.
-		output := func(c chan *model.Entry) {
+		output := func(list List, c chan *model.Entry) {
 			for entry := range c {
+				entry.Source = list.Key
 				out <- entry
 			}
 			wg.Done()
@@ -53,7 +41,7 @@ func Combine(lists ...List) List {
 
 		wg.Add(len(lists))
 		for _, list := range lists {
-			go output(list(ctx))
+			go output(list, list.Generator(ctx))
 		}
 
 		// Start a goroutine to close out once all the output goroutines are
@@ -67,7 +55,64 @@ func Combine(lists ...List) List {
 	}
 }
 
-func TSV(url string, fn Translator) List {
+type Generator func(ctx context.Context) chan *model.Entry
+
+func Combine(generators ...Generator) Generator {
+	return func(ctx context.Context) chan *model.Entry {
+		wg := sync.WaitGroup{}
+		out := make(chan *model.Entry)
+
+		// Start an output goroutine for each input channel in generators. output
+		// copies values from c to out until c is closed, then calls wg.Done.
+		output := func(c chan *model.Entry) {
+			for entry := range c {
+				out <- entry
+			}
+			wg.Done()
+		}
+
+		wg.Add(len(generators))
+		for _, gen := range generators {
+			go output(gen(ctx))
+		}
+
+		// Start a goroutine to close out once all the output goroutines are
+		// done.  This must start after the wg.Add call.
+		go func() {
+			wg.Wait()
+			close(out)
+		}()
+
+		return out
+	}
+}
+
+type Translator func(row []string) *model.Entry
+
+func CSV(url string, fn Translator) Generator {
+	ctor := func(r io.Reader) *csv.Reader {
+		reader := csv.NewReader(r)
+		reader.Comment = '#'
+		reader.TrimLeadingSpace = true
+		reader.FieldsPerRecord = -1
+		return reader
+	}
+	return GenericCSV(url, fn, ctor)
+}
+
+func SSV(url string, fn Translator) Generator {
+	ctor := func(r io.Reader) *csv.Reader {
+		reader := csv.NewReader(r)
+		reader.Comma = ' '
+		reader.Comment = '#'
+		reader.TrimLeadingSpace = true
+		reader.FieldsPerRecord = -1
+		return reader
+	}
+	return GenericCSV(url, fn, ctor)
+}
+
+func TSV(url string, fn Translator) Generator {
 	ctor := func(r io.Reader) *csv.Reader {
 		reader := csv.NewReader(r)
 		reader.Comma = '\t'
@@ -76,24 +121,21 @@ func TSV(url string, fn Translator) List {
 		reader.FieldsPerRecord = -1
 		return reader
 	}
-
-	return csvlist(url, fn, ctor)
+	return GenericCSV(url, fn, ctor)
 }
 
-func SSV(url string, fn Translator) List {
+func CStyleCSV(url string, fn Translator) Generator {
 	ctor := func(r io.Reader) *csv.Reader {
 		reader := csv.NewReader(r)
-		reader.Comma = ' '
-		reader.Comment = '#'
+		reader.Comment = '/'
 		reader.TrimLeadingSpace = true
 		reader.FieldsPerRecord = -1
 		return reader
 	}
-
-	return csvlist(url, fn, ctor)
+	return GenericCSV(url, fn, ctor)
 }
 
-func SSV2(url string, fn Translator) List {
+func CStyleSSV(url string, fn Translator) Generator {
 	ctor := func(r io.Reader) *csv.Reader {
 		reader := csv.NewReader(r)
 		reader.Comma = ' '
@@ -102,35 +144,10 @@ func SSV2(url string, fn Translator) List {
 		reader.FieldsPerRecord = -1
 		return reader
 	}
-
-	return csvlist(url, fn, ctor)
+	return GenericCSV(url, fn, ctor)
 }
 
-func CSV(url string, fn Translator) List {
-	ctor := func(r io.Reader) *csv.Reader {
-		reader := csv.NewReader(r)
-		reader.Comment = '#'
-		reader.TrimLeadingSpace = true
-		reader.FieldsPerRecord = -1
-		return reader
-	}
-
-	return csvlist(url, fn, ctor)
-}
-
-func CSV2(url string, fn Translator) List {
-	ctor := func(r io.Reader) *csv.Reader {
-		reader := csv.NewReader(r)
-		reader.Comment = '/'
-		reader.TrimLeadingSpace = true
-		reader.FieldsPerRecord = -1
-		return reader
-	}
-
-	return csvlist(url, fn, ctor)
-}
-
-func csvlist(url string, fn Translator, ctor func(io.Reader) *csv.Reader) List {
+func GenericCSV(url string, fn Translator, ctor func(io.Reader) *csv.Reader) Generator {
 	return func(ctx context.Context) chan *model.Entry {
 		out := make(chan *model.Entry)
 
@@ -175,4 +192,22 @@ func csvlist(url string, fn Translator, ctor func(io.Reader) *csv.Reader) List {
 
 		return out
 	}
+}
+
+func ExtractHost(s string) string {
+	if s == "" || s == "-" {
+		return ""
+	}
+
+	if !(strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")) {
+		s = "http://" + s
+	}
+
+	u, err := url.Parse(s)
+	if err != nil {
+		//logrus.Printf("failed to parse %q: %v", s, err)
+		return ""
+	}
+
+	return u.Host
 }

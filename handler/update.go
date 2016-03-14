@@ -20,18 +20,18 @@ func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		count := 0
 		start := time.Now()
-		ch := lists.Combine(lists.Lists...)(ctx)
+		ch := lists.Fetch(lists.Lists...)(ctx)
 
 		for entry := range ch {
 			if entry.Err != nil {
-				logrus.Errorf("failed to fetch entry: %v", entry.Err)
+				logrus.Errorf("(%s) failed to fetch entry: %v", entry.Source, entry.Err)
 				return
 			}
 
 			count++
 			err := model.Store(ctx, entry)
 			if err != nil {
-				logrus.Errorf("failed to store entry: %v", err)
+				logrus.Errorf("(%s) failed to store entry: %v", entry.Source, err)
 				return
 			}
 		}
