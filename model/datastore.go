@@ -15,6 +15,7 @@ import (
 type Datastore struct {
 	*sql.DB
 	create *sql.Stmt
+	prune  *sql.Stmt
 }
 
 func NewDatastore(url string) (*Datastore, error) {
@@ -23,7 +24,7 @@ func NewDatastore(url string) (*Datastore, error) {
 		return nil, err
 	}
 
-	store := &Datastore{conn, nil}
+	store := &Datastore{conn, nil, nil}
 	store.create, err = conn.Prepare(`
 		INSERT INTO entries
 			(key, source, domain, ip4, last, category, description)
@@ -31,6 +32,13 @@ func NewDatastore(url string) (*Datastore, error) {
 			($1, $2, $3, $4, $5, $6, $7)
 		ON CONFLICT (key) DO UPDATE SET
 			last = $5, category = $6, description = $7`)
+	if err != nil {
+		return nil, err
+	}
+
+	store.prune, err = conn.Prepare(`
+		DELETE FROM entries
+		WHERE last < (now() - interval '7d')`)
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +75,12 @@ func Store(ctx context.Context, e *Entry) error {
 		time.Now(),
 		e.Category,
 		e.Description)
+	return err
+}
+
+func Prune(ctx context.Context) error {
+	db := ctx.Value(lib.DatabaseKey).(*Datastore)
+	_, err := db.prune.Exec()
 	return err
 }
 

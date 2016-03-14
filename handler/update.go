@@ -36,6 +36,7 @@ func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		model.Prune(ctx)
 		logrus.Printf("added %d entries in %v", count, time.Since(start))
 	}()
 
