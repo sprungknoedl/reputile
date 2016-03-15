@@ -33,6 +33,8 @@ var abusech = List{
 			CSV("https://feodotracker.abuse.ch/blocklist/?download=badips", ip("Feodo trojan C&C server")),
 			CSV("https://ransomwaretracker.abuse.ch/downloads/RW_DOMBL.txt", domain("Ransomware botnet C&C traffic")),
 			CSV("https://ransomwaretracker.abuse.ch/downloads/RW_IPBL.txt", ip("Ransomware botnet C&C traffic")),
+			CSV("https://palevotracker.abuse.ch/blocklists.php?download=domainblocklist", domain("Palevo botnet C&C traffic")),
+			CSV("https://palevotracker.abuse.ch/blocklists.php?download=ipblocklist", ip("Palevo botnet C&C traffic")),
 		)
 	}(),
 }
