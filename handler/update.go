@@ -20,7 +20,14 @@ func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		count := 0
 		start := time.Now()
-		ch := lists.Fetch(lists.Lists...)(ctx)
+
+		// "convert" List to Iterator
+		its := make([]lists.Iterator, len(lists.Lists))
+		for i, list := range lists.Lists {
+			its[i] = list
+		}
+
+		ch := lists.Combine(its...).Run(ctx)
 
 		for entry := range ch {
 			if entry.Err != nil {

@@ -7,7 +7,7 @@ var phishtank = List{
 	Name:        "PhishTank",
 	URL:         "http://www.phishtank.com/",
 	Description: `PhishTank is a free community site where anyone can submit, verify, track and share phishing data.`,
-	Generator: CSV(
+	Iterator: CSV(
 		"http://data.phishtank.com/data/online-valid.csv",
 		func(row []string) *model.Entry {
 			if row[0] == "phish_id" {
@@ -21,7 +21,6 @@ var phishtank = List{
 			}
 
 			return &model.Entry{
-				Source:      "phishtank.com",
 				Domain:      domain,
 				Category:    "phishing",
 				Description: "Domain hosts web pages used for phishing",

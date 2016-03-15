@@ -7,7 +7,7 @@ var autoshun = List{
 	Name:        "AutoShun",
 	URL:         "https://www.autoshun.org/",
 	Description: `AutoShun is a Snort plugin that allows you to send your Snort IDS logs to a centralized server that will correlate attacks from your sensor logs with other snort sensors, honeypots, and mail filters from around the world.`,
-	Generator: CSV(
+	Iterator: CSV(
 		"https://www.autoshun.org/files/shunlist.csv",
 		func(row []string) *model.Entry {
 			if len(row) < 3 {
@@ -15,7 +15,6 @@ var autoshun = List{
 			}
 
 			return &model.Entry{
-				Source:      "autoshun.org",
 				IP4:         row[0],
 				Category:    "attacker",
 				Description: row[2],

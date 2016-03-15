@@ -7,11 +7,10 @@ var abusech = List{
 	Name:        "abuse.ch - ZeuS, Feodo & Ransomware Tracker",
 	URL:         "https://www.abuse.ch/",
 	Description: `abuse.ch tracks Command &amp; Control servers for ZeuS and Feodo trojan and Ransomware around the world and provides you a domain- and a IP-blocklist.`,
-	Generator: func() Generator {
+	Iterator: func() Iterator {
 		domain := func(description string) func(row []string) *model.Entry {
 			return func(row []string) *model.Entry {
 				return &model.Entry{
-					Source:      "abuse.ch",
 					Domain:      row[0],
 					Category:    "malware",
 					Description: description,
@@ -21,7 +20,6 @@ var abusech = List{
 		ip := func(description string) func(row []string) *model.Entry {
 			return func(row []string) *model.Entry {
 				return &model.Entry{
-					Source:      "abuse.ch",
 					IP4:         row[0],
 					Category:    "malware",
 					Description: description,

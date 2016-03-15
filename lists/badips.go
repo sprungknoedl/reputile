@@ -7,11 +7,10 @@ var badips = List{
 	Name:        "badips.com",
 	URL:         "https://www.badips.com/",
 	Description: `badips.com is a community based IP blacklist service. You can report malicious IPs to badips.com and you can download blacklists or query their API to find out if a IP is listed.`,
-	Generator: func() Generator {
+	Iterator: func() Iterator {
 		fn := func(category, description string) func(row []string) *model.Entry {
 			return func(row []string) *model.Entry {
 				return &model.Entry{
-					Source:      "badips.com",
 					IP4:         row[0],
 					Category:    category,
 					Description: description,
