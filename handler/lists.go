@@ -13,11 +13,12 @@ import (
 
 func GetLists(w http.ResponseWriter, r *http.Request) {
 	ctx := lib.NewContext(r)
-	downloads := cache.GetCounter(ctx, "stats:downloads")
+	downloads := cache.GetInt(ctx, "stats:downloads")
 	entries, err := cache.String(ctx, "stats:entries", func(ctx context.Context, key string) (string, error) {
 		cnt, err := model.CountEntries(ctx)
 		return strconv.Itoa(cnt), err
 	})
+
 	if err != nil {
 		HandleError(w, r, err)
 		return

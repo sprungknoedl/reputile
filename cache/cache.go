@@ -36,20 +36,21 @@ func String(ctx context.Context, key string, calc CacheFunc) (string, error) {
 	return value, err
 }
 
-func GetCounter(ctx context.Context, key string) int {
+func GetInt(ctx context.Context, key string) int {
 	conn := ctx.Value(lib.CacheKey).(redis.Conn)
 	value, err := redis.Int(conn.Do("GET", key))
 	if err != nil {
-		logrus.Errorf("counter get %q: %v", key, err)
 		return 0
 	}
 	return value
 }
 
-func IncrCounter(ctx context.Context, key string) {
+func SetInt(ctx context.Context, key string, value int) {
 	conn := ctx.Value(lib.CacheKey).(redis.Conn)
-	_, err := conn.Do("INCR", key)
-	if err != nil {
-		logrus.Errorf("counter incr %q: %v", key, err)
-	}
+	conn.Do("SET", key, value)
+}
+
+func Incr(ctx context.Context, key string) {
+	conn := ctx.Value(lib.CacheKey).(redis.Conn)
+	conn.Do("INCR", key)
 }

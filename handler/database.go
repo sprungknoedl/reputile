@@ -24,7 +24,7 @@ func GetDatabase(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cache.IncrCounter(ctx, "stats:downloads")
+	cache.Incr(ctx, "stats:downloads")
 	Text(w, r, list)
 }
 
@@ -59,6 +59,7 @@ func CalculateDatabase(ctx context.Context, key string) (string, error) {
 	writer.Flush()
 
 	err := writer.Error()
+	cache.SetInt(ctx, "stats:size", buffer.Len())
 	return buffer.String(), err
 }
 
