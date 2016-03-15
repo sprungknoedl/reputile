@@ -6,7 +6,7 @@ var abusech = List{
 	Key:         "abuse.ch",
 	Name:        "abuse.ch - ZeuS, Feodo & Ransomware Tracker",
 	URL:         "https://www.abuse.ch/",
-	Description: `abuse.ch tracks Command &amp; Control servers for ZeuS and Feodo trojan and Ransomware around the world and provides you a domain- and a IP-blocklist.`,
+	Description: `abuse.ch tracks Command&Control servers for ZeuS and Feodo trojan and Ransomware around the world and provides you a domain- and a IP-blocklist.`,
 	Iterator: func() Iterator {
 		domain := func(description string) func(row []string) *model.Entry {
 			return func(row []string) *model.Entry {
