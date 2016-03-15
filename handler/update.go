@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/sprungknoedl/reputile/lib"
 	"github.com/sprungknoedl/reputile/lists"
 	"github.com/sprungknoedl/reputile/model"
@@ -13,6 +14,14 @@ import (
 )
 
 func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
+	// check if update request is authorized
+	token := viper.GetString("update_token")
+	if r.Header.Get("authorization") != "Token "+token {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("update token required\n"))
+		return
+	}
+
 	// create new background context & copy db handle
 	db := lib.NewContext(r).Value(lib.DatabaseKey).(*model.Datastore)
 	ctx := context.WithValue(context.Background(), lib.DatabaseKey, db)
