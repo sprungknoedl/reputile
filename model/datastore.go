@@ -90,7 +90,7 @@ var (
 	queryTranslation = map[string]string{
 		"source":      "source = ?",
 		"domain":      "domain = ?",
-		"ip":          "ip = ?",
+		"ip":          "ip <<= ?",
 		"last":        "last > ?",
 		"category":    "category = ?",
 		"description": "description = ?",
