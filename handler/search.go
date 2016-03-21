@@ -16,7 +16,7 @@ func GetSearch(w http.ResponseWriter, r *http.Request) {
 	if query != "" {
 		filter := map[string]string{}
 		if ip := net.ParseIP(query); ip != nil {
-			filter["ip4"] = ip.String()
+			filter["ip"] = ip.String()
 		} else {
 			filter["domain"] = query
 		}

@@ -28,7 +28,7 @@ func NewDatastore(url string) (*Datastore, error) {
 	store := &Datastore{conn, nil, nil}
 	store.create, err = conn.Prepare(`
 		INSERT INTO entries
-			(key, source, domain, ip4, last, category, description)
+			(key, source, domain, ip, last, category, description)
 		VALUES
 			($1, $2, $3, $4, $5, $6, $7)
 		ON CONFLICT (key) DO UPDATE SET
@@ -90,7 +90,7 @@ var (
 	queryTranslation = map[string]string{
 		"source":      "source = ?",
 		"domain":      "domain = ?",
-		"ip4":         "ip4 = ?",
+		"ip":          "ip = ?",
 		"last":        "last > ?",
 		"category":    "category = ?",
 		"description": "description = ?",
@@ -105,9 +105,9 @@ func Find(ctx context.Context, query map[string]string) chan *Entry {
 		defer close(ch)
 
 		builder := psql.
-			Select("source", "domain", "ip4", "last", "category", "description").
+			Select("source", "domain", "ip", "last", "category", "description").
 			From("entries").
-			OrderBy("source", "domain", "ip4")
+			OrderBy("source", "domain", "ip")
 
 		for key, value := range query {
 			if pred, ok := queryTranslation[key]; ok {
