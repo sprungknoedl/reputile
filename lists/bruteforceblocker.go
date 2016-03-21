@@ -1,6 +1,10 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
+import (
+	"net"
+
+	"github.com/sprungknoedl/reputile/model"
+)
 
 var bruteforceblocker = List{
 	Key:         "rulez.sk",
@@ -11,7 +15,7 @@ var bruteforceblocker = List{
 		"http://danger.rulez.sk/projects/bruteforceblocker/blist.php",
 		func(row []string) *model.Entry {
 			return &model.Entry{
-				IP4:      row[0],
+				IP:       net.ParseIP(row[0]),
 				Category: "attacker",
 			}
 		},

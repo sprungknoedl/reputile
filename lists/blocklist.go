@@ -1,6 +1,10 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
+import (
+	"net"
+
+	"github.com/sprungknoedl/reputile/model"
+)
 
 var blocklist = List{
 	Key:         "blocklist.de",
@@ -11,7 +15,7 @@ var blocklist = List{
 		"http://lists.blocklist.de/lists/all.txt",
 		func(row []string) *model.Entry {
 			return &model.Entry{
-				IP4:      row[0],
+				IP:       net.ParseIP(row[0]),
 				Category: "attacker",
 			}
 		},

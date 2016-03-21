@@ -1,6 +1,10 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
+import (
+	"net"
+
+	"github.com/sprungknoedl/reputile/model"
+)
 
 var badips = List{
 	Key:         "badips.com",
@@ -11,7 +15,7 @@ var badips = List{
 		fn := func(category, description string) func(row []string) *model.Entry {
 			return func(row []string) *model.Entry {
 				return &model.Entry{
-					IP4:         row[0],
+					IP:          net.ParseIP(row[0]),
 					Category:    category,
 					Description: description,
 				}

@@ -167,7 +167,7 @@ func GenericCSV(url string, fn Translator, ctor func(io.Reader) *csv.Reader) Ite
 				}
 
 				e := fn(row)
-				if e == nil {
+				if e == nil || (e.Domain == "" && e.IP == nil) {
 					continue
 				}
 

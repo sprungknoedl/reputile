@@ -43,12 +43,17 @@ func CalculateDatabase(ctx context.Context, key string) (string, error) {
 			return "", entry.Err
 		}
 
+		ip := ""
+		if entry.IP != nil {
+			ip = entry.IP.String()
+		}
+
 		// csv format
 		// source,domain,ip4,last,category,description
 		writer.Write([]string{
 			entry.Source,
 			entry.Domain,
-			entry.IP4,
+			ip,
 			strconv.FormatInt(entry.Last.Unix(), 10),
 			entry.Category,
 			entry.Description,

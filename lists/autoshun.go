@@ -1,6 +1,10 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
+import (
+	"net"
+
+	"github.com/sprungknoedl/reputile/model"
+)
 
 var autoshun = List{
 	Key:         "autoshun.org",
@@ -15,7 +19,7 @@ var autoshun = List{
 			}
 
 			return &model.Entry{
-				IP4:         row[0],
+				IP:          net.ParseIP(row[0]),
 				Category:    "attacker",
 				Description: row[2],
 			}

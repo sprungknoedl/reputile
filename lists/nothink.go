@@ -1,6 +1,10 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
+import (
+	"net"
+
+	"github.com/sprungknoedl/reputile/model"
+)
 
 var nothink = List{
 	Key:         "nothink.org",
@@ -11,7 +15,7 @@ var nothink = List{
 		fn := func(description string) func(row []string) *model.Entry {
 			return func(row []string) *model.Entry {
 				return &model.Entry{
-					IP4:         row[0],
+					IP:          net.ParseIP(row[0]),
 					Category:    "attacker",
 					Description: description,
 				}

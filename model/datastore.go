@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql"
 	"fmt"
+	"net"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -49,7 +50,7 @@ func NewDatastore(url string) (*Datastore, error) {
 type Entry struct {
 	Source      string
 	Domain      string
-	IP4         string
+	IP          net.IP
 	Last        time.Time
 	Category    string
 	Description string
@@ -62,7 +63,7 @@ func SendError(err error) *Entry {
 }
 
 func (e Entry) Key() string {
-	return fmt.Sprintf("%s|%s|%s", e.Source, e.Domain, e.IP4)
+	return fmt.Sprintf("%s|%s|%s", e.Source, e.Domain, e.IP)
 }
 
 func Store(ctx context.Context, e *Entry) error {
@@ -71,7 +72,7 @@ func Store(ctx context.Context, e *Entry) error {
 		e.Key(),
 		e.Source,
 		e.Domain,
-		e.IP4,
+		sql.NullString{Valid: e.IP != nil, String: e.IP.String()},
 		time.Now(),
 		e.Category,
 		e.Description)
@@ -123,16 +124,22 @@ func Find(ctx context.Context, query map[string]string) chan *Entry {
 		defer rows.Close()
 		for rows.Next() {
 			e := &Entry{}
+			ip := sql.NullString{}
 			err := rows.Scan(
 				&e.Source,
 				&e.Domain,
-				&e.IP4,
+				&ip,
 				&e.Last,
 				&e.Category,
 				&e.Description)
+
 			if err != nil {
 				ch <- SendError(err)
 				return
+			}
+
+			if ip.Valid {
+				e.IP = net.ParseIP(ip.String)
 			}
 
 			select {

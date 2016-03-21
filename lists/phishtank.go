@@ -15,13 +15,8 @@ var phishtank = List{
 				return nil
 			}
 
-			domain := ExtractHost(row[1])
-			if domain == "" {
-				return nil
-			}
-
 			return &model.Entry{
-				Domain:      domain,
+				Domain:      ExtractHost(row[1]),
 				Category:    "phishing",
 				Description: "Domain hosts web pages used for phishing",
 			}

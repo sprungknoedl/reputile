@@ -1,6 +1,10 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
+import (
+	"net"
+
+	"github.com/sprungknoedl/reputile/model"
+)
 
 var bambenek = List{
 	Key:         "bambenekconsulting.com",
@@ -11,7 +15,7 @@ var bambenek = List{
 		"http://osint.bambenekconsulting.com/feeds/c2-ipmasterlist.txt",
 		func(row []string) *model.Entry {
 			return &model.Entry{
-				IP4:         row[0],
+				IP:          net.ParseIP(row[0]),
 				Category:    "malware",
 				Description: row[1],
 			}

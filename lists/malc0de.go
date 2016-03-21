@@ -1,6 +1,10 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
+import (
+	"net"
+
+	"github.com/sprungknoedl/reputile/model"
+)
 
 var malc0de = List{
 	Key:         "malc0de.com",
@@ -27,7 +31,7 @@ var malc0de = List{
 				}
 
 				return &model.Entry{
-					IP4:         row[0],
+					IP:          net.ParseIP(row[0]),
 					Category:    "malware",
 					Description: "distributed malware in the last 30 days",
 				}

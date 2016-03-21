@@ -11,10 +11,6 @@ var cybercrime = List{
 		"http://cybercrime-tracker.net/all.php",
 		func(row []string) *model.Entry {
 			host := ExtractHost(row[0])
-			if host == "" {
-				return nil
-			}
-
 			return &model.Entry{
 				Domain:   host,
 				Category: "malware",

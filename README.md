@@ -15,13 +15,13 @@ more specify RFC4180) as well.
 
 The columns of the reputile format are:
 
-	source,domain,ip4,last,category,description
+	source,domain,ip,last,category,description
 
 The detailed description of each field is:
 
 * **source**: The name of the upstream source for this row
 * **domain**: The DNS domain name this row refers to. *Can be empty if not applicable*
-* **ip4**: The IPv4 address this row refers to. *Can be empty if not applicable*
+* **ip**: The IPv4 or IPv6 address this row refers to. *Can be empty if not applicable*
 * **last**: A UNIX timestamp (UTC) when this row was last refreshed or checked
 * **category**: A category identifier for this row. See [Categories][categories] for details.
 * **description**: A description for humans why this row is listed. Can be empty if not provided by upstream.
