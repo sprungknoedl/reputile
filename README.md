@@ -19,12 +19,12 @@ The columns of the reputile format are:
 
 The detailed description of each field is:
 
-	+ **source** The URL to the upstream source for this row
-	+ **domain** The DNS domain name this row refers to. *Can be empty if not applicable*
-	+ **ip4** The IPv4 address this row refers to. *Can be empty if not applicable*
-	+ **last** A UNIX timestamp (UTC) when this row was last refreshed or checked
-	+ **category** A category identifier for this row. See [Categories][categories] for details.
-	+ **description** A description for humans why this row is listed. Can be empty if not provided by upstream.
+* **source**: The name of the upstream source for this row
+* **domain**: The DNS domain name this row refers to. *Can be empty if not applicable*
+* **ip4**: The IPv4 address this row refers to. *Can be empty if not applicable*
+* **last**: A UNIX timestamp (UTC) when this row was last refreshed or checked
+* **category**: A category identifier for this row. See [Categories][categories] for details.
+* **description**: A description for humans why this row is listed. Can be empty if not provided by upstream.
 
 ##Query
 The reputile database can be filtered with URL query parameters. Each
@@ -34,7 +34,7 @@ When filtering against a timestamp field, the query is intepreted as *GREATER TH
 
 ###Examples
 
-	?domain=example.com&amp;category=malware</code></pre>
+	?domain=example.com&category=malware
 
 This query returns all rows that match the domain *example.com* and the category *malware*.
 
