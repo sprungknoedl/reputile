@@ -3,6 +3,7 @@ package lists
 import (
 	"encoding/csv"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -40,8 +41,14 @@ func (l List) Run(ctx context.Context) chan *model.Entry {
 	out := make(chan *model.Entry)
 
 	go func() {
+		defer close(out)
 		for entry := range c {
 			entry.Source = l.Key
+			if entry.Domain == "" && entry.IP == nil {
+				logrus.Warnf("skipping invalid entry: %+v", entry)
+				continue
+			}
+
 			out <- entry
 		}
 	}()
@@ -167,7 +174,7 @@ func GenericCSV(url string, fn Translator, ctor func(io.Reader) *csv.Reader) Ite
 				}
 
 				e := fn(row)
-				if e == nil || (e.Domain == "" && e.IP == nil) {
+				if e == nil {
 					continue
 				}
 
@@ -197,9 +204,18 @@ func ExtractHost(s string) string {
 
 	u, err := url.Parse(s)
 	if err != nil {
-		//logrus.Printf("failed to parse %q: %v", s, err)
+		logrus.Warnf("failed to parse %s: %v", s, err)
 		return ""
 	}
 
-	return u.Host
+	host := u.Host
+	if strings.ContainsRune(host, ':') {
+		host, _, err = net.SplitHostPort(host)
+		if err != nil {
+			logrus.Warnf("failed to parse %s: %v", u.Host, err)
+			return ""
+		}
+	}
+
+	return host
 }
