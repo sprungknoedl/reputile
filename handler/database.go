@@ -64,7 +64,10 @@ func CalculateDatabase(ctx context.Context, key string) (string, error) {
 	writer.Flush()
 
 	err := writer.Error()
-	cache.SetInt(ctx, "stats:size", buffer.Len())
+	if len(filter) == 0 {
+		// store download size only when retrieving full list
+		cache.SetInt(ctx, "stats:size", buffer.Len())
+	}
 	return buffer.String(), err
 }
 
