@@ -5,10 +5,10 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/carbocation/interpose"
-	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
+	"github.com/sprungknoedl/reputile/cache"
 	"github.com/sprungknoedl/reputile/handler"
 	"github.com/sprungknoedl/reputile/lib"
 	"github.com/sprungknoedl/reputile/middleware"
@@ -33,7 +33,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	cache, err := redis.DialURL(redisURL)
+	cache, err := cache.NewCache(redisURL)
 	if err != nil {
 		logrus.Fatal(err)
 	}

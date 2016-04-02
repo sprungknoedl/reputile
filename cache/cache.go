@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/garyburd/redigo/redis"
 	"github.com/sprungknoedl/reputile/lib"
@@ -9,8 +11,30 @@ import (
 
 type CacheFunc func(ctx context.Context, key string) (string, error)
 
+func NewCache(url string) (*redis.Pool, error) {
+	pool := &redis.Pool{
+		MaxIdle:     3,
+		IdleTimeout: 120 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			return redis.DialURL(url)
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
+	}
+
+	conn := pool.Get()
+	_, err := conn.Do("PING")
+	conn.Close()
+	return pool, err
+}
+
 func String(ctx context.Context, key string, calc CacheFunc) (string, error) {
-	conn := ctx.Value(lib.CacheKey).(redis.Conn)
+	pool := ctx.Value(lib.CacheKey).(*redis.Pool)
+	conn := pool.Get()
+	defer conn.Close()
+
 	value, err := redis.String(conn.Do("GET", key))
 	if err == nil {
 		// cache hit
@@ -37,7 +61,10 @@ func String(ctx context.Context, key string, calc CacheFunc) (string, error) {
 }
 
 func GetInt(ctx context.Context, key string) int {
-	conn := ctx.Value(lib.CacheKey).(redis.Conn)
+	pool := ctx.Value(lib.CacheKey).(*redis.Pool)
+	conn := pool.Get()
+	defer conn.Close()
+
 	value, err := redis.Int(conn.Do("GET", key))
 	if err != nil {
 		return 0
@@ -46,11 +73,17 @@ func GetInt(ctx context.Context, key string) int {
 }
 
 func SetInt(ctx context.Context, key string, value int) {
-	conn := ctx.Value(lib.CacheKey).(redis.Conn)
+	pool := ctx.Value(lib.CacheKey).(*redis.Pool)
+	conn := pool.Get()
+	defer conn.Close()
+
 	conn.Do("SET", key, value)
 }
 
 func Incr(ctx context.Context, key string) {
-	conn := ctx.Value(lib.CacheKey).(redis.Conn)
+	pool := ctx.Value(lib.CacheKey).(*redis.Pool)
+	conn := pool.Get()
+	defer conn.Close()
+
 	conn.Do("INCR", key)
 }
