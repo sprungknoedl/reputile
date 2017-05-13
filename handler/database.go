@@ -1,15 +1,14 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/csv"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/sprungknoedl/reputile/cache"
 	"github.com/sprungknoedl/reputile/lib"
 	"github.com/sprungknoedl/reputile/model"
 	"golang.org/x/net/context"
@@ -17,30 +16,24 @@ import (
 
 func GetDatabase(w http.ResponseWriter, r *http.Request) {
 	ctx := lib.NewContext(r)
-	key := "list:" + r.URL.RawQuery
-	list, err := cache.String(ctx, key, CalculateDatabase)
+
+	w.Header().Add("content-type", "text/plain;charset=utf-8")
+	err := CalculateDatabase(ctx, w, r.URL.Query())
 	if err != nil {
 		HandleError(w, r, err)
 		return
 	}
-
-	cache.Incr(ctx, "stats:downloads")
-	Text(w, r, list)
 }
 
-func CalculateDatabase(ctx context.Context, key string) (string, error) {
+func CalculateDatabase(ctx context.Context, w io.Writer, query url.Values) error {
 	start := time.Now()
-	buffer := &bytes.Buffer{}
+	entries := model.Find(ctx, FilterMap(query))
+	logrus.Printf("query %q; find took %v", query.Encode(), time.Since(start))
 
-	r := ctx.Value(lib.RequestKey).(*http.Request)
-	filter := FilterMap(r.URL.Query())
-	entries := model.Find(ctx, filter)
-	logrus.Printf("query %q; find took %v", key, time.Since(start))
-
-	writer := csv.NewWriter(buffer)
+	writer := csv.NewWriter(w)
 	for entry := range entries {
 		if entry.Err != nil {
-			return "", entry.Err
+			return entry.Err
 		}
 
 		ip := ""
@@ -60,15 +53,11 @@ func CalculateDatabase(ctx context.Context, key string) (string, error) {
 		})
 	}
 
-	logrus.Printf("query %q; writing took %v", r.URL.RawQuery, time.Since(start))
+	logrus.Printf("query %q; writing took %v", query.Encode(), time.Since(start))
 	writer.Flush()
 
 	err := writer.Error()
-	if len(filter) == 0 {
-		// store download size only when retrieving full list
-		cache.SetInt(ctx, "stats:size", buffer.Len())
-	}
-	return buffer.String(), err
+	return err
 }
 
 func FilterMap(values url.Values) map[string]string {

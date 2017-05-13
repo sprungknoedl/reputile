@@ -168,23 +168,13 @@ func Find(ctx context.Context, query map[string]string) chan *Entry {
 }
 
 func CountEntries(ctx context.Context) (int, error) {
-	return getCount(ctx, `SELECT COUNT(*) FROM entries`)
-}
-
-func getCount(ctx context.Context, query string) (int, error) {
 	db := ctx.Value(lib.DatabaseKey).(*Datastore)
 
 	count := 0
-	rows, err := db.Query(query)
+	err := db.QueryRow(`SELECT COUNT(*) FROM entries`).Scan(&count)
 	if err != nil {
 		return 0, nil
 	}
 
-	// scan first row, queries should only return one but we are not
-	// enforcing this
-	rows.Next()
-	err = rows.Scan(&count)
-	rows.Close()
-
-	return count, err
+	return count, nil
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
-	"github.com/sprungknoedl/reputile/cache"
 	"github.com/sprungknoedl/reputile/handler"
 	"github.com/sprungknoedl/reputile/lib"
 	"github.com/sprungknoedl/reputile/middleware"
@@ -25,15 +24,9 @@ func config() {
 func main() {
 	config()
 	databaseURL := viper.GetString("database_url")
-	redisURL := viper.GetString("redis_url")
 	port := viper.GetString("port")
 
 	store, err := model.NewDatastore(databaseURL)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
-	cache, err := cache.NewCache(redisURL)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -47,7 +40,6 @@ func main() {
 
 	middle := interpose.New()
 	middle.Use(middleware.Templates("templates/*.html"))
-	middle.Use(middleware.WithValue(lib.CacheKey, cache))
 	middle.Use(middleware.WithValue(lib.DatabaseKey, store))
 	middle.UseHandler(router)
 
