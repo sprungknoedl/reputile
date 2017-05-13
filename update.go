@@ -1,32 +1,20 @@
-package handler
+package main
 
 import (
-	"fmt"
-	"net/http"
+	"context"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/sprungknoedl/reputile/lib"
 	"github.com/sprungknoedl/reputile/lists"
 	"github.com/sprungknoedl/reputile/model"
-	"golang.org/x/net/context"
 )
 
-func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
-	// check if update request is authorized
-	token := viper.GetString("update_token")
-	if r.Header.Get("authorization") != "Token "+token {
-		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte("update token required\n"))
-		return
-	}
-
+func UpdateDatabase(db *model.Datastore) {
 	// create new background context & copy db handle
-	db := lib.NewContext(r).Value(lib.DatabaseKey).(*model.Datastore)
 	ctx := context.WithValue(context.Background(), lib.DatabaseKey, db)
 
-	go func() {
+	for {
 		count := 0
 		start := time.Now()
 
@@ -54,7 +42,6 @@ func UpdateDatabase(w http.ResponseWriter, r *http.Request) {
 
 		model.Prune(ctx)
 		logrus.Printf("added %d entries in %v", count, time.Since(start))
-	}()
-
-	fmt.Fprintf(w, "dispatched update job")
+		time.Sleep(1 * time.Hour)
+	}
 }
