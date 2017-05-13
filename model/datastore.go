@@ -25,6 +25,19 @@ func NewDatastore(url string) (*Datastore, error) {
 		return nil, err
 	}
 
+	_, err = conn.Exec(`CREATE TABLE IF NOT EXISTS entries (
+		key text NOT NULL PRIMARY KEY,
+		source text NOT NULL,
+		domain text NOT NULL,
+		ip inet,
+		category text NOT NULL,
+		description text NOT NULL,
+		last timestamp with time zone NOT NULL
+		);`)
+	if err != nil {
+		return nil, err
+	}
+
 	store := &Datastore{conn, nil, nil}
 	store.create, err = conn.Prepare(`
 		INSERT INTO entries
