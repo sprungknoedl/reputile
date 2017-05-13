@@ -35,7 +35,9 @@ func main() {
 	router.HandleFunc("/search", app.GetSearch)
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("static")))
 
-	// go UpdateDatabase(db)
+	if !env.GetBool("disable.update") {
+		go UpdateDatabase(db)
+	}
 
 	logrus.Printf("listening on :%s", port)
 	err = http.ListenAndServe(":"+port, router)
