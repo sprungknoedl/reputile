@@ -11,7 +11,6 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/nimbusec-oss/minion"
 	"github.com/sprungknoedl/reputile/lists"
-	"github.com/sprungknoedl/reputile/model"
 )
 
 func (app App) GetIndex(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +77,7 @@ func (app App) GetDatabase(w http.ResponseWriter, r *http.Request) {
 func (app App) GetSearch(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	query := r.URL.Query().Get("q")
-	result := []*model.Entry{}
+	result := []*lists.Entry{}
 
 	if query != "" {
 		filter := map[string]string{}

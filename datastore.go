@@ -6,15 +6,25 @@ import (
 	"net"
 	"time"
 
-	sq "github.com/Masterminds/squirrel"
+	"github.com/Masterminds/squirrel"
 	_ "github.com/lib/pq"
-	"github.com/sprungknoedl/reputile/model"
+	"github.com/sprungknoedl/reputile/lists"
+)
+
+var (
+	psql             = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
+	queryTranslation = map[string]string{
+		"source":      "source = ?",
+		"domain":      "domain = ?",
+		"ip":          "ip <<= ?",
+		"last":        "last > ?",
+		"category":    "category = ?",
+		"description": "description = ?",
+	}
 )
 
 type Datastore struct {
-	*sql.DB
-	create *sql.Stmt
-	prune  *sql.Stmt
+	db *sql.DB
 }
 
 func NewDatastore(url string) (*Datastore, error) {
@@ -36,30 +46,16 @@ func NewDatastore(url string) (*Datastore, error) {
 		return nil, err
 	}
 
-	store := &Datastore{conn, nil, nil}
-	store.create, err = conn.Prepare(`
-		INSERT INTO entries
-			(key, source, domain, ip, last, category, description)
-		VALUES
-			($1, $2, $3, $4, $5, $6, $7)
-		ON CONFLICT (key) DO UPDATE SET
-			last = $5, category = $6, description = $7`)
-	if err != nil {
-		return nil, err
-	}
-
-	store.prune, err = conn.Prepare(`
-		DELETE FROM entries
-		WHERE last < (now() - interval '7d')`)
-	if err != nil {
-		return nil, err
-	}
-
-	return store, nil
+	return &Datastore{db: conn}, nil
 }
 
-func (db *Datastore) Store(ctx context.Context, e *model.Entry) error {
-	_, err := db.create.Exec(
+func (db *Datastore) Store(ctx context.Context, e *lists.Entry) error {
+	_, err := db.db.ExecContext(ctx, `
+		INSERT INTO entries
+		(key, source, domain, ip, last, category, description)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		ON CONFLICT (key) DO UPDATE SET
+		last = $5, category = $6, description = $7`,
 		e.Key(),
 		e.Source,
 		e.Domain,
@@ -71,12 +67,14 @@ func (db *Datastore) Store(ctx context.Context, e *model.Entry) error {
 }
 
 func (db *Datastore) Prune(ctx context.Context) error {
-	_, err := db.prune.Exec()
+	_, err := db.db.ExecContext(ctx, `
+		DELETE FROM entries
+		WHERE last < (now() - interval '7d')`)
 	return err
 }
 
-func (db *Datastore) Find(ctx context.Context, query map[string]string) chan *model.Entry {
-	ch := make(chan *model.Entry)
+func (db *Datastore) Find(ctx context.Context, query map[string]string) chan *lists.Entry {
+	ch := make(chan *lists.Entry)
 
 	go func() {
 		defer close(ch)
@@ -92,15 +90,21 @@ func (db *Datastore) Find(ctx context.Context, query map[string]string) chan *mo
 			}
 		}
 
-		rows, err := builder.RunWith(db.DB).Query()
+		query, args, err := builder.ToSql()
 		if err != nil {
-			ch <- model.SendError(err)
+			ch <- lists.SendError(err)
+			return
+		}
+
+		rows, err := db.db.QueryContext(ctx, query, args...)
+		if err != nil {
+			ch <- lists.SendError(err)
 			return
 		}
 
 		defer rows.Close()
 		for rows.Next() {
-			e := &model.Entry{}
+			e := &lists.Entry{}
 			ip := sql.NullString{}
 			err := rows.Scan(
 				&e.Source,
@@ -111,7 +115,7 @@ func (db *Datastore) Find(ctx context.Context, query map[string]string) chan *mo
 				&e.Description)
 
 			if err != nil {
-				ch <- model.SendError(err)
+				ch <- lists.SendError(err)
 				return
 			}
 
@@ -121,7 +125,7 @@ func (db *Datastore) Find(ctx context.Context, query map[string]string) chan *mo
 
 			select {
 			case <-ctx.Done():
-				ch <- model.SendError(ctx.Err())
+				ch <- lists.SendError(ctx.Err())
 				break
 			case ch <- e:
 			}
@@ -133,22 +137,11 @@ func (db *Datastore) Find(ctx context.Context, query map[string]string) chan *mo
 
 func (db *Datastore) CountEntries(ctx context.Context) (int, error) {
 	count := 0
-	err := db.QueryRow(`SELECT COUNT(*) FROM entries`).Scan(&count)
+	err := db.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM entries`).
+		Scan(&count)
 	if err != nil {
 		return 0, nil
 	}
 
 	return count, nil
 }
-
-var (
-	psql             = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	queryTranslation = map[string]string{
-		"source":      "source = ?",
-		"domain":      "domain = ?",
-		"ip":          "ip <<= ?",
-		"last":        "last > ?",
-		"category":    "category = ?",
-		"description": "description = ?",
-	}
-)

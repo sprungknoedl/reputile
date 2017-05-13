@@ -1,7 +1,5 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
-
 var phishtank = List{
 	Key:         "phishtank.com",
 	Name:        "PhishTank",
@@ -9,13 +7,13 @@ var phishtank = List{
 	Description: `PhishTank is a free community site where anyone can submit, verify, track and share phishing data.`,
 	Iterator: CSV(
 		"http://data.phishtank.com/data/online-valid.csv",
-		func(row []string) *model.Entry {
+		func(row []string) *Entry {
 			if row[0] == "phish_id" {
 				// header line
 				return nil
 			}
 
-			return &model.Entry{
+			return &Entry{
 				Domain:      ExtractHost(row[1]),
 				Category:    "phishing",
 				Description: "Domain hosts web pages used for phishing",

@@ -1,10 +1,6 @@
 package lists
 
-import (
-	"net"
-
-	"github.com/sprungknoedl/reputile/model"
-)
+import "net"
 
 var nothink = List{
 	Key:         "nothink.org",
@@ -12,9 +8,9 @@ var nothink = List{
 	URL:         "http://www.nothink.org/index.php",
 	Description: `Matteo Cantoni, ICT senior security analyst and penetration tester runs several honeypots to detect SNMP, SSH, DNS and telnet attacks`,
 	Iterator: func() Iterator {
-		fn := func(description string) func(row []string) *model.Entry {
-			return func(row []string) *model.Entry {
-				return &model.Entry{
+		fn := func(description string) func(row []string) *Entry {
+			return func(row []string) *Entry {
+				return &Entry{
 					IP:          net.ParseIP(row[0]),
 					Category:    "attacker",
 					Description: description,

@@ -2,28 +2,48 @@ package lists
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/sprungknoedl/reputile/model"
 	"golang.org/x/net/context"
 )
 
 var Lists []List
 
 type Iterator interface {
-	Run(context.Context) chan *model.Entry
+	Run(context.Context) chan *Entry
 }
 
-type IteratorFunc func(ctx context.Context) chan *model.Entry
+type IteratorFunc func(ctx context.Context) chan *Entry
 
-func (fn IteratorFunc) Run(ctx context.Context) chan *model.Entry {
+func (fn IteratorFunc) Run(ctx context.Context) chan *Entry {
 	return fn(ctx)
+}
+
+type Entry struct {
+	Source      string
+	Domain      string
+	IP          net.IP
+	Last        time.Time
+	Category    string
+	Description string
+
+	Err error
+}
+
+func SendError(err error) *Entry {
+	return &Entry{Err: err}
+}
+
+func (e Entry) Key() string {
+	return fmt.Sprintf("%s|%s|%s", e.Source, e.Domain, e.IP)
 }
 
 type List struct {
@@ -36,9 +56,9 @@ type List struct {
 
 // Run runs the iterator defined for this List. It also sets
 // list shared attributes to each entry
-func (l List) Run(ctx context.Context) chan *model.Entry {
+func (l List) Run(ctx context.Context) chan *Entry {
 	c := l.Iterator.Run(ctx)
-	out := make(chan *model.Entry)
+	out := make(chan *Entry)
 
 	go func() {
 		defer close(out)
@@ -57,13 +77,13 @@ func (l List) Run(ctx context.Context) chan *model.Entry {
 }
 
 func Combine(its ...Iterator) Iterator {
-	return IteratorFunc(func(ctx context.Context) chan *model.Entry {
+	return IteratorFunc(func(ctx context.Context) chan *Entry {
 		wg := sync.WaitGroup{}
-		out := make(chan *model.Entry)
+		out := make(chan *Entry)
 
 		// Start an output goroutine for each input channel in generators. output
 		// copies values from c to out until c is closed, then calls wg.Done.
-		output := func(c chan *model.Entry) {
+		output := func(c chan *Entry) {
 			for entry := range c {
 				out <- entry
 			}
@@ -86,7 +106,7 @@ func Combine(its ...Iterator) Iterator {
 	})
 }
 
-type Translator func(row []string) *model.Entry
+type Translator func(row []string) *Entry
 
 func CSV(url string, fn Translator) Iterator {
 	ctor := func(r io.Reader) *csv.Reader {
@@ -147,15 +167,15 @@ func CStyleSSV(url string, fn Translator) Iterator {
 }
 
 func GenericCSV(url string, fn Translator, ctor func(io.Reader) *csv.Reader) Iterator {
-	return IteratorFunc(func(ctx context.Context) chan *model.Entry {
-		out := make(chan *model.Entry)
+	return IteratorFunc(func(ctx context.Context) chan *Entry {
+		out := make(chan *Entry)
 
 		go func() {
 			defer close(out)
 
 			resp, err := http.Get(url)
 			if err != nil {
-				out <- model.SendError(err)
+				out <- SendError(err)
 				return
 			}
 
@@ -169,7 +189,7 @@ func GenericCSV(url string, fn Translator, ctor func(io.Reader) *csv.Reader) Ite
 				}
 
 				if err != nil {
-					out <- model.SendError(err)
+					out <- SendError(err)
 					break
 				}
 
@@ -181,7 +201,7 @@ func GenericCSV(url string, fn Translator, ctor func(io.Reader) *csv.Reader) Ite
 				select {
 				case out <- e:
 				case <-ctx.Done():
-					out <- model.SendError(ctx.Err())
+					out <- SendError(ctx.Err())
 					break
 				}
 			}

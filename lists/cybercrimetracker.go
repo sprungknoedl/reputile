@@ -1,7 +1,5 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
-
 var cybercrime = List{
 	Key:         "cybercrime-tracker.net",
 	Name:        "CyberCrime Tracker",
@@ -9,9 +7,9 @@ var cybercrime = List{
 	Description: `CyberCrime tracks C&C servers`,
 	Iterator: CSV(
 		"http://cybercrime-tracker.net/all.php",
-		func(row []string) *model.Entry {
+		func(row []string) *Entry {
 			host := ExtractHost(row[0])
-			return &model.Entry{
+			return &Entry{
 				Domain:   host,
 				Category: "malware",
 			}

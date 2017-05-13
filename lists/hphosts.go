@@ -1,15 +1,13 @@
 package lists
 
-import "github.com/sprungknoedl/reputile/model"
-
 var hphosts = List{
 	Key:         "hosts-file.net",
 	Name:        "hpHosts",
 	URL:         "http://hosts-file.net/",
 	Description: `hpHosts is a community managed and maintained hosts file that allows an additional layer of protection against access to ad, tracking and malicious websites.`,
 	Iterator: func() Iterator {
-		fn := func(category, description string) func(row []string) *model.Entry {
-			return func(row []string) *model.Entry {
+		fn := func(category, description string) func(row []string) *Entry {
+			return func(row []string) *Entry {
 				if len(row) < 2 {
 					return nil
 				}
@@ -18,7 +16,7 @@ var hphosts = List{
 					return nil
 				}
 
-				return &model.Entry{
+				return &Entry{
 					Domain:      row[1],
 					Category:    category,
 					Description: description,

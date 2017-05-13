@@ -2,8 +2,6 @@ package lists
 
 import (
 	"net"
-
-	"github.com/sprungknoedl/reputile/model"
 )
 
 var abusech = List{
@@ -12,18 +10,18 @@ var abusech = List{
 	URL:         "https://www.abuse.ch/",
 	Description: `abuse.ch tracks Command&Control servers for ZeuS and Feodo trojan and Ransomware around the world and provides you a domain- and a IP-blocklist.`,
 	Iterator: func() Iterator {
-		domain := func(description string) func(row []string) *model.Entry {
-			return func(row []string) *model.Entry {
-				return &model.Entry{
+		domain := func(description string) func(row []string) *Entry {
+			return func(row []string) *Entry {
+				return &Entry{
 					Domain:      row[0],
 					Category:    "malware",
 					Description: description,
 				}
 			}
 		}
-		ip := func(description string) func(row []string) *model.Entry {
-			return func(row []string) *model.Entry {
-				return &model.Entry{
+		ip := func(description string) func(row []string) *Entry {
+			return func(row []string) *Entry {
+				return &Entry{
 					IP:          net.ParseIP(row[0]),
 					Category:    "malware",
 					Description: description,

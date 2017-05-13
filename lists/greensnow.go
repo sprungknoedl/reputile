@@ -1,10 +1,6 @@
 package lists
 
-import (
-	"net"
-
-	"github.com/sprungknoedl/reputile/model"
-)
+import "net"
 
 var greensnow = List{
 	Key:         "greensnow.co",
@@ -13,8 +9,8 @@ var greensnow = List{
 	Description: `GreenSnow is a team consisting of the best specialists in computer security, we harvest a large number of IPs from different computers located around the world. GreenSnow is comparable with SpamHaus.org for attacks of any kind except for spam. Our list is updated automatically and you can withdraw at any time your IP address if it has been listed.`,
 	Iterator: CSV(
 		"http://blocklist.greensnow.co/greensnow.txt",
-		func(row []string) *model.Entry {
-			return &model.Entry{
+		func(row []string) *Entry {
+			return &Entry{
 				IP:       net.ParseIP(row[0]),
 				Category: "attacker",
 			}

@@ -1,0 +1,79 @@
+memo = "d25f34c52b54ac780db70cf54acf5caa5e5abe211998aea8e40efad30bde96bf"
+
+[[projects]]
+  branch = "v1"
+  name = "github.com/Masterminds/squirrel"
+  packages = ["."]
+  revision = "20f192218cf52a73397fa2df45bdda720f3e47c8"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/Sirupsen/logrus"
+  packages = ["."]
+  revision = "acfabf31db8f45a9174f54a0d48ea4d15627af4d"
+
+[[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
+  version = "v1.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  revision = "4c1c3952b7d9d0a061a3fa7b36fd373ba0398ebc"
+
+[[projects]]
+  name = "github.com/gorilla/securecookie"
+  packages = ["."]
+  revision = "667fe4e3466a040b780561fe9b51a83a3753eefc"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/sessions"
+  packages = ["."]
+  revision = "ca9ada44574153444b00d3fd9c8559e4cc95f896"
+  version = "v1.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/lann/builder"
+  packages = ["."]
+  revision = "f22ce00fd9394014049dad11c244859432bd6820"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/lann/ps"
+  packages = ["."]
+  revision = "62de8c46ede02a7675c4c79c84883eb164cb71e3"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/lib/pq"
+  packages = [".","oid"]
+  revision = "2704adc878c21e1329f46f6e56a1c387d788ff94"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/nimbusec-oss/minion"
+  packages = ["."]
+  revision = "d393dc86452b2214c838faeb11d827f5495771d9"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/sprungknoedl/env"
+  packages = ["."]
+  revision = "b97273b4ce86f20535d766f4b83b595b2191e88e"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  revision = "84f0e6f92b10139f986b1756e149a7d9de270cdc"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "f845067cf72a21fb4929b0e6a35273bd83b56396"

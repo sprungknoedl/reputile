@@ -1,10 +1,6 @@
 package lists
 
-import (
-	"net"
-
-	"github.com/sprungknoedl/reputile/model"
-)
+import "net"
 
 var malc0de = List{
 	Key:         "malc0de.com",
@@ -13,24 +9,24 @@ var malc0de = List{
 	Description: `malc0de is an updated database of domains hosting malicious executables during the last 30 days.`,
 	Iterator: Combine(
 		CStyleSSV("http://malc0de.com/bl/BOOT",
-			func(row []string) *model.Entry {
+			func(row []string) *Entry {
 				if len(row) < 2 {
 					return nil
 				}
 
-				return &model.Entry{
+				return &Entry{
 					Domain:      row[1],
 					Category:    "malware",
 					Description: "distributed malware in the last 30 days",
 				}
 			}),
 		CStyleCSV("http://malc0de.com/bl/IP_Blacklist.txt",
-			func(row []string) *model.Entry {
+			func(row []string) *Entry {
 				if len(row) < 1 {
 					return nil
 				}
 
-				return &model.Entry{
+				return &Entry{
 					IP:          net.ParseIP(row[0]),
 					Category:    "malware",
 					Description: "distributed malware in the last 30 days",
