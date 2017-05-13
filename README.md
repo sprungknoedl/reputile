@@ -7,7 +7,7 @@ frontend is only meant for exploration. The database can be retrieved in total o
 filtered based on user defined criterias. See [Query][query] for more
 details.
 
-##Format
+## Format
 The reputile format strives to be in the most simple form possible to enable easy
 usage in a variety of languages / tools. Because a lot of reputation sources 
 allready use some form of CSV format, the reputile format is based on CSV (to be 
@@ -26,13 +26,13 @@ The detailed description of each field is:
 * **category**: A category identifier for this row. See [Categories][categories] for details.
 * **description**: A description for humans why this row is listed. Can be empty if not provided by upstream.
 
-##Query
+## Query
 The reputile database can be filtered with URL query parameters. Each
 provided query paramter specifies a condition a row must satisfy.
 
 When filtering against a timestamp field, the query is intepreted as *GREATER THAN*.
 
-###Examples
+### Examples
 
 	?domain=example.com&category=malware
 
