@@ -5,13 +5,13 @@ import (
 	"net/http"
 
 	"github.com/gorilla/context"
-	"github.com/spf13/viper"
+	"github.com/sprungknoedl/env"
 	"github.com/sprungknoedl/reputile/handler"
 	"github.com/sprungknoedl/reputile/lib"
 )
 
 func Templates(pattern string) func(http.Handler) http.Handler {
-	debug := viper.GetBool("debug")
+	debug := env.GetBool("debug")
 	if debug {
 		// parse template on each request
 		return func(next http.Handler) http.Handler {
