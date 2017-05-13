@@ -5,14 +5,12 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/sprungknoedl/reputile/lib"
 	"github.com/sprungknoedl/reputile/lists"
-	"github.com/sprungknoedl/reputile/model"
 )
 
-func UpdateDatabase(db *model.Datastore) {
-	// create new background context & copy db handle
-	ctx := context.WithValue(context.Background(), lib.DatabaseKey, db)
+func UpdateDatabase(db *Datastore) {
+	// create new background context
+	ctx := context.Background()
 
 	for {
 		count := 0
@@ -33,14 +31,14 @@ func UpdateDatabase(db *model.Datastore) {
 			}
 
 			count++
-			err := model.Store(ctx, entry)
+			err := db.Store(ctx, entry)
 			if err != nil {
 				logrus.Errorf("(%s) failed to store entry: %v", entry.Source, err)
 				return
 			}
 		}
 
-		model.Prune(ctx)
+		db.Prune(ctx)
 		logrus.Printf("added %d entries in %v", count, time.Since(start))
 		time.Sleep(1 * time.Hour)
 	}

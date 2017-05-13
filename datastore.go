@@ -1,16 +1,14 @@
-package model
+package main
 
 import (
+	"context"
 	"database/sql"
-	"fmt"
 	"net"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/lib/pq"
-	"github.com/sprungknoedl/reputile/lib"
-
-	"golang.org/x/net/context"
+	"github.com/sprungknoedl/reputile/model"
 )
 
 type Datastore struct {
@@ -60,27 +58,7 @@ func NewDatastore(url string) (*Datastore, error) {
 	return store, nil
 }
 
-type Entry struct {
-	Source      string
-	Domain      string
-	IP          net.IP
-	Last        time.Time
-	Category    string
-	Description string
-
-	Err error
-}
-
-func SendError(err error) *Entry {
-	return &Entry{Err: err}
-}
-
-func (e Entry) Key() string {
-	return fmt.Sprintf("%s|%s|%s", e.Source, e.Domain, e.IP)
-}
-
-func Store(ctx context.Context, e *Entry) error {
-	db := ctx.Value(lib.DatabaseKey).(*Datastore)
+func (db *Datastore) Store(ctx context.Context, e *model.Entry) error {
 	_, err := db.create.Exec(
 		e.Key(),
 		e.Source,
@@ -92,27 +70,13 @@ func Store(ctx context.Context, e *Entry) error {
 	return err
 }
 
-func Prune(ctx context.Context) error {
-	db := ctx.Value(lib.DatabaseKey).(*Datastore)
+func (db *Datastore) Prune(ctx context.Context) error {
 	_, err := db.prune.Exec()
 	return err
 }
 
-var (
-	psql             = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	queryTranslation = map[string]string{
-		"source":      "source = ?",
-		"domain":      "domain = ?",
-		"ip":          "ip <<= ?",
-		"last":        "last > ?",
-		"category":    "category = ?",
-		"description": "description = ?",
-	}
-)
-
-func Find(ctx context.Context, query map[string]string) chan *Entry {
-	ch := make(chan *Entry)
-	db := ctx.Value(lib.DatabaseKey).(*Datastore)
+func (db *Datastore) Find(ctx context.Context, query map[string]string) chan *model.Entry {
+	ch := make(chan *model.Entry)
 
 	go func() {
 		defer close(ch)
@@ -130,13 +94,13 @@ func Find(ctx context.Context, query map[string]string) chan *Entry {
 
 		rows, err := builder.RunWith(db.DB).Query()
 		if err != nil {
-			ch <- SendError(err)
+			ch <- model.SendError(err)
 			return
 		}
 
 		defer rows.Close()
 		for rows.Next() {
-			e := &Entry{}
+			e := &model.Entry{}
 			ip := sql.NullString{}
 			err := rows.Scan(
 				&e.Source,
@@ -147,7 +111,7 @@ func Find(ctx context.Context, query map[string]string) chan *Entry {
 				&e.Description)
 
 			if err != nil {
-				ch <- SendError(err)
+				ch <- model.SendError(err)
 				return
 			}
 
@@ -157,7 +121,7 @@ func Find(ctx context.Context, query map[string]string) chan *Entry {
 
 			select {
 			case <-ctx.Done():
-				ch <- SendError(ctx.Err())
+				ch <- model.SendError(ctx.Err())
 				break
 			case ch <- e:
 			}
@@ -167,9 +131,7 @@ func Find(ctx context.Context, query map[string]string) chan *Entry {
 	return ch
 }
 
-func CountEntries(ctx context.Context) (int, error) {
-	db := ctx.Value(lib.DatabaseKey).(*Datastore)
-
+func (db *Datastore) CountEntries(ctx context.Context) (int, error) {
 	count := 0
 	err := db.QueryRow(`SELECT COUNT(*) FROM entries`).Scan(&count)
 	if err != nil {
@@ -178,3 +140,15 @@ func CountEntries(ctx context.Context) (int, error) {
 
 	return count, nil
 }
+
+var (
+	psql             = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	queryTranslation = map[string]string{
+		"source":      "source = ?",
+		"domain":      "domain = ?",
+		"ip":          "ip <<= ?",
+		"last":        "last > ?",
+		"category":    "category = ?",
+		"description": "description = ?",
+	}
+)
